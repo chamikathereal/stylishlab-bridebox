@@ -3,7 +3,7 @@
 import { StatCard } from "@/components/shared/StatCard";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { useMyEarnings } from "@/api/generated/endpoints/reports-analytics/reports-analytics";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   DollarSign,
@@ -22,15 +22,25 @@ function formatCurrency(val?: number) {
 
 export default function EmployeeDashboard() {
   const { user } = useAuth();
-  
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().split("T")[0];
+  }, []);
   const [selectedDate, setSelectedDate] = useState(todayStr);
-  
+
   const { data: res, isLoading } = useMyEarnings({ date: selectedDate });
   const earnings = res?.data;
 
   const isToday = selectedDate === todayStr;
-  const displayDate = isToday ? "Today" : new Date(selectedDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const displayDate = isToday
+    ? "Today"
+    : new Date(selectedDate).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
 
   if (isLoading) return <LoadingSpinner />;
 
