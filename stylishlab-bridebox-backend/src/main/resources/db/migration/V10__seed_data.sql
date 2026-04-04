@@ -1,6 +1,6 @@
 -- Seed admin user (password: admin123 - BCrypt hash)
 INSERT INTO users (username, password_hash, role, status)
-VALUES ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'ADMIN', 'ACTIVE');
+VALUES ('admin', '$2a$10$ontNdECDTdyytJCcD/y2AuIdYKY/nKeN9o4h.3/OX6tPwO1XSJQpG', 'ADMIN', 'ACTIVE');
 
 -- Seed default expense categories
 INSERT INTO expense_categories (category_name, category_type) VALUES
