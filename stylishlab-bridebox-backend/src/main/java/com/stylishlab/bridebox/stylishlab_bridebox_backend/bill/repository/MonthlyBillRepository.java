@@ -13,4 +13,7 @@ public interface MonthlyBillRepository extends JpaRepository<MonthlyBill, Long> 
 
     @Query("SELECT COALESCE(SUM(b.amount), 0) FROM MonthlyBill b WHERE b.billMonth = :month")
     BigDecimal sumBillsByMonth(@Param("month") String month);
+
+    @Query("SELECT COALESCE(SUM(b.amount), 0) FROM MonthlyBill b")
+    BigDecimal sumAllBills();
 }

@@ -42,4 +42,19 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
 
     @Query("SELECT COUNT(s) FROM Sale s WHERE s.employee.id = :empId AND s.createdAt BETWEEN :from AND :to")
     Long countServicesByEmployee(@Param("empId") Long employeeId, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("SELECT COALESCE(SUM(s.servicePriceSnapshot), 0) FROM Sale s")
+    BigDecimal sumTotalSales();
+
+    @Query("SELECT COALESCE(SUM(s.ownerAmount), 0) FROM Sale s")
+    BigDecimal sumOwnerAmount();
+
+    @Query("SELECT COALESCE(SUM(s.employeeAmount), 0) FROM Sale s")
+    BigDecimal sumEmployeeAmount();
+
+    @Query("SELECT COALESCE(SUM(s.paidAmount), 0) FROM Sale s")
+    BigDecimal sumPaidAmount();
+
+    @Query("SELECT COALESCE(SUM(s.dueAmount), 0) FROM Sale s")
+    BigDecimal sumDueAmount();
 }

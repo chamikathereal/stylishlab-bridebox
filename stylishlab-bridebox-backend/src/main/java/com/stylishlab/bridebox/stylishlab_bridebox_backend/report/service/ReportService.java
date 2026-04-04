@@ -79,44 +79,69 @@ public class ReportService {
         return report;
     }
 
-    public EmployeeEarningsResponse getEmployeeEarnings(Long employeeId) {
+    public PeriodReportResponse getTotalReport() {
+        BigDecimal totalSales = saleRepository.sumTotalSales();
+        BigDecimal cashReceived = saleRepository.sumPaidAmount();
+        BigDecimal creditSales = saleRepository.sumDueAmount();
+        BigDecimal employeeCommissions = saleRepository.sumEmployeeAmount();
+        BigDecimal ownerRevenue = saleRepository.sumOwnerAmount();
+        BigDecimal totalExpenses = expenseRepository.sumAllExpenses();
+        BigDecimal totalBills = billRepository.sumAllBills();
+
+        BigDecimal netProfit = ownerRevenue.subtract(totalExpenses).subtract(totalBills);
+
+        return PeriodReportResponse.builder()
+                .period("Total")
+                .totalSales(totalSales)
+                .cashReceived(cashReceived)
+                .creditSales(creditSales)
+                .employeeCommissions(employeeCommissions)
+                .totalExpenses(totalExpenses)
+                .totalBills(totalBills)
+                .ownerRevenue(ownerRevenue)
+                .netProfit(netProfit)
+                .totalTransactions(saleRepository.count())
+                .build();
+    }
+
+    public EmployeeEarningsResponse getEmployeeEarnings(Long employeeId, LocalDate date) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
 
-        LocalDate today = LocalDate.now();
-        LocalDateTime todayStart = today.atStartOfDay();
-        LocalDateTime todayEnd = today.atTime(LocalTime.MAX);
+        LocalDate targetDate = (date != null) ? date : LocalDate.now();
+        LocalDateTime targetStart = targetDate.atStartOfDay();
+        LocalDateTime targetEnd = targetDate.atTime(LocalTime.MAX);
 
-        LocalDate weekStart = today.with(DayOfWeek.MONDAY);
+        LocalDate weekStart = targetDate.with(DayOfWeek.MONDAY);
         LocalDateTime weekStartDt = weekStart.atStartOfDay();
 
-        LocalDate monthStart = today.with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate monthStart = targetDate.with(TemporalAdjusters.firstDayOfMonth());
         LocalDateTime monthStartDt = monthStart.atStartOfDay();
 
-        LocalDate yearStart = today.with(TemporalAdjusters.firstDayOfYear());
+        LocalDate yearStart = targetDate.with(TemporalAdjusters.firstDayOfYear());
         LocalDateTime yearStartDt = yearStart.atStartOfDay();
 
         return EmployeeEarningsResponse.builder()
                 .employeeId(employeeId)
                 .employeeName(employee.getFullName())
-                .todayEarnings(saleRepository.sumEmployeeEarnings(employeeId, todayStart, todayEnd))
-                .todayServices(saleRepository.countServicesByEmployee(employeeId, todayStart, todayEnd))
-                .weekEarnings(saleRepository.sumEmployeeEarnings(employeeId, weekStartDt, todayEnd))
-                .weekServices(saleRepository.countServicesByEmployee(employeeId, weekStartDt, todayEnd))
-                .monthEarnings(saleRepository.sumEmployeeEarnings(employeeId, monthStartDt, todayEnd))
-                .monthServices(saleRepository.countServicesByEmployee(employeeId, monthStartDt, todayEnd))
-                .yearEarnings(saleRepository.sumEmployeeEarnings(employeeId, yearStartDt, todayEnd))
-                .yearServices(saleRepository.countServicesByEmployee(employeeId, yearStartDt, todayEnd))
+                .todayEarnings(saleRepository.sumEmployeeEarnings(employeeId, targetStart, targetEnd))
+                .todayServices(saleRepository.countServicesByEmployee(employeeId, targetStart, targetEnd))
+                .weekEarnings(saleRepository.sumEmployeeEarnings(employeeId, weekStartDt, targetEnd))
+                .weekServices(saleRepository.countServicesByEmployee(employeeId, weekStartDt, targetEnd))
+                .monthEarnings(saleRepository.sumEmployeeEarnings(employeeId, monthStartDt, targetEnd))
+                .monthServices(saleRepository.countServicesByEmployee(employeeId, monthStartDt, targetEnd))
+                .yearEarnings(saleRepository.sumEmployeeEarnings(employeeId, yearStartDt, targetEnd))
+                .yearServices(saleRepository.countServicesByEmployee(employeeId, yearStartDt, targetEnd))
                 .build();
     }
 
-    public EmployeeEarningsResponse getMyEarnings(String username) {
+    public EmployeeEarningsResponse getMyEarnings(String username, LocalDate date) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
         if (user.getEmployee() == null) {
             throw new ResourceNotFoundException("Employee profile not found for user: " + username);
         }
-        return getEmployeeEarnings(user.getEmployee().getId());
+        return getEmployeeEarnings(user.getEmployee().getId(), date);
     }
 
     // --- Private helper ---

@@ -48,15 +48,25 @@ public class ReportController {
         return ResponseEntity.ok(ApiResponse.ok(reportService.getYearlyReport(year)));
     }
 
+    @GetMapping("/total")
+    @Operation(summary = "Total report", description = "Get aggregated amounts for all time")
+    public ResponseEntity<ApiResponse<PeriodReportResponse>> total() {
+        return ResponseEntity.ok(ApiResponse.ok(reportService.getTotalReport()));
+    }
+
     @GetMapping("/employee/earnings")
     @Operation(summary = "My earnings", description = "Employee views their own earnings (today, week, month, year)")
-    public ResponseEntity<ApiResponse<EmployeeEarningsResponse>> myEarnings(Authentication auth) {
-        return ResponseEntity.ok(ApiResponse.ok(reportService.getMyEarnings(auth.getName())));
+    public ResponseEntity<ApiResponse<EmployeeEarningsResponse>> myEarnings(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            Authentication auth) {
+        return ResponseEntity.ok(ApiResponse.ok(reportService.getMyEarnings(auth.getName(), date)));
     }
 
     @GetMapping("/employee/{employeeId}/earnings")
     @Operation(summary = "Employee earnings by ID", description = "Admin views any employee's earnings")
-    public ResponseEntity<ApiResponse<EmployeeEarningsResponse>> employeeEarnings(@PathVariable Long employeeId) {
-        return ResponseEntity.ok(ApiResponse.ok(reportService.getEmployeeEarnings(employeeId)));
+    public ResponseEntity<ApiResponse<EmployeeEarningsResponse>> employeeEarnings(
+            @PathVariable Long employeeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(ApiResponse.ok(reportService.getEmployeeEarnings(employeeId, date)));
     }
 }
