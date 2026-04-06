@@ -3,12 +3,23 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import { StatCard } from "@/components/shared/StatCard";
+import { cn } from "@/lib/utils";
 import {
   useGetAll4,
   useCreate3,
   useToggleStatus2,
   useUpdateCommission,
+  useUpdate2,
 } from "@/api/generated/endpoints/employee-management/employee-management";
+import {
+  useEmployeeEarnings,
+  useDaily,
+  useWeekly,
+  useMonthly,
+  useYearly,
+  useTotal,
+} from "@/api/generated/endpoints/reports-analytics/reports-analytics";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +33,22 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
   Plus,
   UserCheck,
   UserX,
@@ -30,6 +57,11 @@ import {
   BarChart3,
   TrendingUp,
   DollarSign,
+  LayoutGrid,
+  List,
+  Target,
+  Users,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -37,13 +69,13 @@ import {
   EmployeeResponse,
   EmployeeEarningsResponse,
 } from "@/api/generated/model";
-import { useEmployeeEarnings } from "@/api/generated/endpoints/reports-analytics/reports-analytics";
 
 export default function EmployeesPage() {
   const { data: res, isLoading } = useGetAll4();
   const createMutation = useCreate3();
   const toggleMutation = useToggleStatus2();
-  const commissionMutation = useUpdateCommission();
+  const updateDetailsMutation = useUpdate2();
+  const updateCommissionMutation = useUpdateCommission();
   const queryClient = useQueryClient();
   const employees = (res?.data ?? []) as EmployeeResponse[];
 
@@ -55,16 +87,117 @@ export default function EmployeesPage() {
     employeePercent: "50",
     ownerPercent: "50",
   });
-  const [commForm, setCommForm] = useState({
+  // Unified Edit State
+  const [editEmployee, setEditEmployee] = useState<EmployeeResponse | null>(
+    null,
+  );
+  const [editForm, setEditForm] = useState({
+    fullName: "",
+    mobile: "",
     employeePercent: "",
     ownerPercent: "",
   });
-  const [commEmployeeId, setCommEmployeeId] = useState<number | null>(null);
+
   const [perfEmployeeId, setPerfEmployeeId] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<"grid" | "list">("list");
+
+  // KPI States
+  const [kpiEmployeeId, setKpiEmployeeId] = useState<string>("all");
+  const [kpiPeriod, setKpiPeriod] = useState<
+    "daily" | "weekly" | "monthly" | "yearly" | "total"
+  >("monthly");
+
+  const today = new Date().toISOString().split("T")[0];
+  const [selectedDate, setSelectedDate] = useState(today);
+
+  // Computed Date Parts
+  const selectedMonth = selectedDate.substring(0, 7);
+  const selectedYear = parseInt(selectedDate.substring(0, 4));
+
+  // Aggregated Queries
+  const dailyQuery = useDaily(
+    { date: selectedDate },
+    { query: { enabled: kpiEmployeeId === "all" && kpiPeriod === "daily" } },
+  );
+  const weeklyQuery = useWeekly(
+    { date: selectedDate },
+    { query: { enabled: kpiEmployeeId === "all" && kpiPeriod === "weekly" } },
+  );
+  const monthlyQuery = useMonthly(
+    { yearMonth: selectedMonth },
+    { query: { enabled: kpiEmployeeId === "all" && kpiPeriod === "monthly" } },
+  );
+  const yearlyQuery = useYearly(
+    { year: selectedYear },
+    { query: { enabled: kpiEmployeeId === "all" && kpiPeriod === "yearly" } },
+  );
+  const totalQuery = useTotal({
+    query: { enabled: kpiEmployeeId === "all" && kpiPeriod === "total" },
+  });
+
+  // Individual Query
+  const individualQuery = useEmployeeEarnings(
+    kpiEmployeeId === "all" ? 0 : parseInt(kpiEmployeeId),
+    undefined,
+    { query: { enabled: kpiEmployeeId !== "all" } },
+  );
+
+  // KPI Data Resolution
+  const getKpiData = () => {
+    if (kpiEmployeeId === "all") {
+      const source =
+        kpiPeriod === "daily"
+          ? dailyQuery.data
+          : kpiPeriod === "weekly"
+            ? weeklyQuery.data
+            : kpiPeriod === "monthly"
+              ? monthlyQuery.data
+              : kpiPeriod === "yearly"
+                ? yearlyQuery.data
+                : totalQuery.data;
+
+      const d = source?.data;
+      return {
+        sales: d?.totalSales ?? 0,
+        services: d?.totalTransactions ?? 0,
+        commission: d?.employeeCommissions ?? 0,
+        efficiency: (d?.totalSales ?? 0) / (d?.totalTransactions || 1),
+      };
+    } else {
+      const d = individualQuery.data?.data;
+      const earnings =
+        kpiPeriod === "daily"
+          ? d?.todayEarnings
+          : kpiPeriod === "weekly"
+            ? d?.weekEarnings
+            : kpiPeriod === "monthly"
+              ? d?.monthEarnings
+              : d?.yearEarnings; // No "total" for individual in this hook
+
+      const services =
+        kpiPeriod === "daily"
+          ? d?.todayServices
+          : kpiPeriod === "weekly"
+            ? d?.weekServices
+            : kpiPeriod === "monthly"
+              ? d?.monthServices
+              : d?.yearServices;
+
+      return {
+        sales: earnings ?? 0,
+        services: services ?? 0,
+        commission: 0, // Individual hook doesn't break down commission
+        efficiency: (earnings ?? 0) / (services || 1),
+      };
+    }
+  };
+
+  const kpis = getKpiData();
 
   const { data: perfRes, isLoading: perfLoading } = useEmployeeEarnings(
-    perfEmployeeId as number,
+    perfEmployeeId ?? 0,
+    undefined,
     { query: { enabled: !!perfEmployeeId } },
   );
   const performance = perfRes?.data as EmployeeEarningsResponse | undefined;
@@ -122,25 +255,61 @@ export default function EmployeesPage() {
     );
   };
 
-  const handleCommission = () => {
-    if (!commEmployeeId) return;
-    const ep = parseFloat(commForm.employeePercent);
-    const op = parseFloat(commForm.ownerPercent);
-    if (ep + op !== 100) {
-      toast.error("Must total 100%");
+  const handleUpdate = async () => {
+    if (!editEmployee?.id) return;
+
+    const commData = {
+      employeePercent: parseFloat(editForm.employeePercent),
+      ownerPercent: parseFloat(editForm.ownerPercent),
+    };
+
+    if (commData.employeePercent + commData.ownerPercent !== 100) {
+      toast.error("Commission total must be 100%");
       return;
     }
-    commissionMutation.mutate(
-      { id: commEmployeeId, data: { employeePercent: ep, ownerPercent: op } },
-      {
-        onSuccess: () => {
-          toast.success("Commission updated");
-          queryClient.invalidateQueries();
-          setCommEmployeeId(null);
-        },
-        onError: () => toast.error("Failed to update commission"),
-      },
-    );
+
+    try {
+      const promises = [];
+
+      // Check if details changed
+      if (
+        editForm.fullName !== editEmployee.fullName ||
+        editForm.mobile !== editEmployee.mobile
+      ) {
+        promises.push(
+          updateDetailsMutation.mutateAsync({
+            id: editEmployee.id,
+            data: { fullName: editForm.fullName, mobile: editForm.mobile },
+          }),
+        );
+      }
+
+      // Check if commission changed
+      if (
+        parseFloat(editForm.employeePercent) !==
+          editEmployee.currentEmployeePercent ||
+        parseFloat(editForm.ownerPercent) !== editEmployee.currentOwnerPercent
+      ) {
+        promises.push(
+          updateCommissionMutation.mutateAsync({
+            id: editEmployee.id,
+            data: commData,
+          }),
+        );
+      }
+
+      if (promises.length === 0) {
+        setEditEmployee(null);
+        return;
+      }
+
+      await Promise.all(promises);
+      toast.success("Employee updated successfully");
+      queryClient.invalidateQueries();
+      setEditEmployee(null);
+    } catch {
+      toast.error("Failed to update employee");
+    }
   };
 
   function formatCurrency(val?: number) {
@@ -150,17 +319,127 @@ export default function EmployeesPage() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard
+          title="Revenue Generated"
+          value={formatCurrency(kpis.sales)}
+          icon={DollarSign}
+          subtitle={`${kpiPeriod === "yearly" ? selectedYear : kpiPeriod === "total" ? "All Time" : selectedDate}`}
+          variant="primary"
+        />
+        <StatCard
+          title="Services Rendered"
+          value={kpis.services.toString()}
+          icon={Users}
+          subtitle="Client count"
+          variant="primary"
+        />
+        {kpiEmployeeId === "all" ? (
+          <StatCard
+            title="Team Payout"
+            value={formatCurrency(kpis.commission)}
+            icon={Zap}
+            subtitle="Employee Commissions"
+            variant="success"
+          />
+        ) : (
+          <StatCard
+            title="Avg. Ticket"
+            value={formatCurrency(kpis.efficiency)}
+            icon={Target}
+            subtitle="Per service average"
+            variant="warning"
+          />
+        )}
+        <div className="flex flex-col gap-2 justify-center p-4 bg-muted/20 rounded-xl border border-border/50 backdrop-blur-sm">
+          <div className="flex flex-col gap-1">
+            <Label className="text-[10px] uppercase text-muted-foreground font-bold">
+              Target Selection
+            </Label>
+            <Select
+              value={kpiEmployeeId}
+              onValueChange={(val) => val && setKpiEmployeeId(val)}
+            >
+              <SelectTrigger className="h-8 w-full text-xs bg-background">
+                <SelectValue placeholder="All Team">
+                  {kpiEmployeeId === "all"
+                    ? "All Team Members"
+                    : employees.find((e) => e.id?.toString() === kpiEmployeeId)
+                        ?.fullName}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Team Members</SelectItem>
+                {employees.map((e) => (
+                  <SelectItem key={e.id} value={e.id!.toString()}>
+                    {e.fullName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label className="text-[10px] uppercase text-muted-foreground font-bold">
+              Time Filter
+            </Label>
+            <Select
+              value={kpiPeriod}
+              onValueChange={(v) => v && setKpiPeriod(v as typeof kpiPeriod)}
+            >
+              <SelectTrigger className="h-8 w-full text-xs bg-background">
+                <SelectValue placeholder="Monthly" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="yearly">Yearly</SelectItem>
+                {kpiEmployeeId === "all" && (
+                  <SelectItem value="total">All Time</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
       <PageHeader
         title="Employees"
         description={`${employees.length} team members`}
       >
-        <Button
-          className="gap-2 bg-linear-to-r from-emerald-600 to-teal-600 text-white"
-          onClick={() => setOpen(true)}
-        >
-          <Plus className="w-4 h-4" /> Add Employee
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center bg-muted/50 p-1 rounded-lg border border-border/50">
+            <Button
+              variant={view === "grid" ? "secondary" : "ghost"}
+              size="sm"
+              className={cn(
+                "h-7 px-3 text-xs gap-1.5",
+                view === "grid" && "bg-background shadow-xs",
+              )}
+              onClick={() => setView("grid")}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" /> Grid
+            </Button>
+            <Button
+              variant={view === "list" ? "secondary" : "ghost"}
+              size="sm"
+              className={cn(
+                "h-7 px-3 text-xs gap-1.5",
+                view === "list" && "bg-background shadow-xs",
+              )}
+              onClick={() => setView("list")}
+            >
+              <List className="w-3.5 h-3.5" /> List
+            </Button>
+          </div>
+          <Button
+            className="gap-2 bg-linear-to-r from-emerald-600 to-teal-600 text-white"
+            onClick={() => setOpen(true)}
+          >
+            <Plus className="w-4 h-4" /> Add Employee
+          </Button>
+        </div>
       </PageHeader>
 
       {/* Create Dialog */}
@@ -233,141 +512,301 @@ export default function EmployeesPage() {
         </DialogContent>
       </Dialog>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {employees.map((emp) => (
-          <Card key={emp.id} className="glass-card-hover border-teal-500/10">
-            <CardContent className="px-5 py-2">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-600 font-bold">
-                    {emp.fullName?.charAt(0)}
+      {view === "grid" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {employees.map((emp) => (
+            <Card key={emp.id} className="glass-card-hover border-teal-500/10">
+              <CardContent className="px-5 py-2">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-600 font-bold">
+                      {emp.fullName?.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{emp.fullName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        @{emp.username}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-sm">{emp.fullName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      @{emp.username}
-                    </p>
-                  </div>
-                </div>
-                <Badge
-                  variant={emp.status === "ACTIVE" ? "default" : "secondary"}
-                  className={
-                    emp.status === "ACTIVE"
-                      ? "bg-teal-500/20 text-teal-600 border-none"
-                      : ""
-                  }
-                >
-                  {emp.status}
-                </Badge>
-              </div>
-              {emp.mobile && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                  <Phone className="w-3 h-3" /> {emp.mobile}
-                </div>
-              )}
-              <div className="flex items-center gap-2 mb-4 p-2 rounded-lg bg-muted/30">
-                <Percent className="w-3.5 h-3.5 text-teal-600" />
-                <span className="text-xs">
-                  Employee: <strong>{emp.currentEmployeePercent}%</strong>
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  | Owner: <strong>{emp.currentOwnerPercent}%</strong>
-                </span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 text-xs"
-                    onClick={() => handleToggle(emp.id!)}
+                  <Badge
+                    variant={emp.status === "ACTIVE" ? "default" : "secondary"}
+                    className={
+                      emp.status === "ACTIVE"
+                        ? "bg-teal-500/20 text-teal-600 border-none"
+                        : ""
+                    }
                   >
-                    {emp.status === "ACTIVE" ? (
-                      <>
-                        <UserX className="w-3 h-3 mr-1" /> Deactivate
-                      </>
-                    ) : (
-                      <>
-                        <UserCheck className="w-3 h-3 mr-1" /> Activate
-                      </>
-                    )}
-                  </Button>
+                    {emp.status}
+                  </Badge>
+                </div>
+                {emp.mobile && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                    <Phone className="w-3 h-3" /> {emp.mobile}
+                  </div>
+                )}
+                <div className="flex items-center gap-2 mb-4 p-2 rounded-lg bg-muted/30">
+                  <Percent className="w-3.5 h-3.5 text-teal-600" />
+                  <span className="text-xs">
+                    Employee: <strong>{emp.currentEmployeePercent}%</strong>
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    | Owner: <strong>{emp.currentOwnerPercent}%</strong>
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 text-xs"
+                      onClick={() => {
+                        if (emp.id) handleToggle(emp.id);
+                      }}
+                    >
+                      {emp.status === "ACTIVE" ? (
+                        <>
+                          <UserX className="w-3 h-3 mr-1" /> Deactivate
+                        </>
+                      ) : (
+                        <>
+                          <UserCheck className="w-3 h-3 mr-1" /> Activate
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="flex-1 text-xs"
+                      onClick={() => {
+                        setEditEmployee(emp);
+                        setEditForm({
+                          fullName: emp.fullName ?? "",
+                          mobile: emp.mobile ?? "",
+                          employeePercent: String(
+                            emp.currentEmployeePercent ?? 50,
+                          ),
+                          ownerPercent: String(emp.currentOwnerPercent ?? 50),
+                        });
+                      }}
+                    >
+                      <Percent className="w-3 h-3 mr-1" /> Edit
+                    </Button>
+                  </div>
                   <Button
                     size="sm"
-                    variant="secondary"
-                    className="flex-1 text-xs"
+                    className="w-full p-5 text-xs gap-2 bg-linear-to-r mt-4 from-teal-600/10 to-emerald-600/10 text-blue-100 hover:text-white"
                     onClick={() => {
-                      setCommEmployeeId(emp.id!);
-                      setCommForm({
-                        employeePercent: String(
-                          emp.currentEmployeePercent ?? 50,
-                        ),
-                        ownerPercent: String(emp.currentOwnerPercent ?? 50),
-                      });
+                      if (emp.id) setPerfEmployeeId(emp.id);
                     }}
                   >
-                    <Percent className="w-3 h-3 mr-1" /> Commission
+                    <BarChart3 className="w-3.5 h-3.5" /> View Business
+                    Performance
                   </Button>
                 </div>
-                <Button
-                  size="sm"
-                  className="w-full text-xs gap-2 bg-linear-to-r mt-4 from-teal-600/10 to-emerald-600/10 text-blue-200 hover:text-white"
-                  onClick={() => setPerfEmployeeId(emp.id!)}
-                >
-                  <BarChart3 className="w-3.5 h-3.5" /> View Business
-                  Performance
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-md overflow-hidden">
+          <Table>
+            <TableHeader className="bg-muted/30">
+              <TableRow className="hover:bg-transparent border-border/50">
+                <TableHead className="w-[300px]">Employee</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Commission</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {employees.map((emp) => (
+                <TableRow key={emp.id} className="border-border/40">
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9 border border-border/50">
+                        <AvatarFallback className="bg-teal-500/10 text-teal-600 text-xs font-bold">
+                          {emp.fullName?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">
+                          {emp.fullName}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          @{emp.username}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        emp.status === "ACTIVE" ? "default" : "secondary"
+                      }
+                      className={cn(
+                        "text-[10px] py-0 h-5 border-none",
+                        emp.status === "ACTIVE"
+                          ? "bg-teal-500/10 text-teal-600"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {emp.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1.5 text-[11px] items-center">
+                      <span className="text-muted-foreground font-medium">
+                        {emp.currentEmployeePercent}%
+                      </span>
+                      <span className="text-muted-foreground/30">/</span>
+                      <span className="font-medium">
+                        {emp.currentOwnerPercent}%
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {emp.mobile || "-"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                        onClick={() => {
+                          setEditEmployee(emp);
+                          setEditForm({
+                            fullName: emp.fullName ?? "",
+                            mobile: emp.mobile ?? "",
+                            employeePercent: String(
+                              emp.currentEmployeePercent ?? 50,
+                            ),
+                            ownerPercent: String(emp.currentOwnerPercent ?? 50),
+                          });
+                        }}
+                        title="Edit Details"
+                      >
+                        <Percent className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-teal-600 hover:bg-teal-500/10"
+                        onClick={() => {
+                          if (emp.id) setPerfEmployeeId(emp.id);
+                        }}
+                        title="View Performance"
+                      >
+                        <BarChart3 className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className={cn(
+                          "h-8 w-8",
+                          emp.status === "ACTIVE"
+                            ? "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            : "text-muted-foreground hover:text-teal-600 hover:bg-teal-500/10",
+                        )}
+                        onClick={() => {
+                          if (emp.id) handleToggle(emp.id);
+                        }}
+                        title={
+                          emp.status === "ACTIVE" ? "Deactivate" : "Activate"
+                        }
+                      >
+                        {emp.status === "ACTIVE" ? (
+                          <UserX className="w-3.5 h-3.5" />
+                        ) : (
+                          <UserCheck className="w-3.5 h-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
-      {/* Commission Dialog */}
+      {/* Edit Dialog */}
       <Dialog
-        open={!!commEmployeeId}
-        onOpenChange={(o) => {
-          if (!o) setCommEmployeeId(null);
+        open={!!editEmployee}
+        onOpenChange={(o: boolean) => {
+          if (!o) setEditEmployee(null);
         }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update Commission</DialogTitle>
+            <DialogTitle>Edit Employee: {editEmployee?.fullName}</DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 py-2">
             <div>
-              <Label>Employee %</Label>
+              <Label className="mb-2">Full Name</Label>
               <Input
-                type="number"
-                value={commForm.employeePercent}
+                value={editForm.fullName}
                 onChange={(e) =>
-                  setCommForm({ ...commForm, employeePercent: e.target.value })
+                  setEditForm({ ...editForm, fullName: e.target.value })
                 }
               />
             </div>
             <div>
-              <Label>Owner %</Label>
+              <Label className="mb-2">Mobile</Label>
               <Input
-                type="number"
-                value={commForm.ownerPercent}
+                value={editForm.mobile}
                 onChange={(e) =>
-                  setCommForm({ ...commForm, ownerPercent: e.target.value })
+                  setEditForm({ ...editForm, mobile: e.target.value })
                 }
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="mb-2">Employee %</Label>
+                <Input
+                  type="number"
+                  value={editForm.employeePercent}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      employeePercent: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label className="mb-2">Owner %</Label>
+                <Input
+                  type="number"
+                  value={editForm.ownerPercent}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, ownerPercent: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground flex items-center gap-2 p-2.5 bg-muted/30 rounded-lg border border-teal-500/10">
+              <Percent className="w-3 h-3 text-teal-600 shrink-0" />
+              <span>
+                <strong>Data Integrity Note:</strong> Commission changes create
+                a new record. Historical sales will NOT be affected.
+              </span>
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Note: Old sales will keep their original commission values.
-          </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCommEmployeeId(null)}>
+            <Button variant="outline" onClick={() => setEditEmployee(null)}>
               Cancel
             </Button>
             <Button
-              onClick={handleCommission}
-              disabled={commissionMutation.isPending}
+              onClick={handleUpdate}
+              disabled={
+                updateDetailsMutation.isPending ||
+                updateCommissionMutation.isPending
+              }
             >
-              Update
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -376,7 +815,7 @@ export default function EmployeesPage() {
       {/* Performance Dialog */}
       <Dialog
         open={!!perfEmployeeId}
-        onOpenChange={(o) => {
+        onOpenChange={(o: boolean) => {
           if (!o) setPerfEmployeeId(null);
         }}
       >

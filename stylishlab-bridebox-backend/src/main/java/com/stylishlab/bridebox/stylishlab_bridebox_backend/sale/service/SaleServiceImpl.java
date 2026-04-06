@@ -12,10 +12,11 @@ import com.stylishlab.bridebox.stylishlab_bridebox_backend.employee.repository.E
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.dto.*;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.entity.Sale;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.repository.SaleRepository;
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.user.repository.UserRepository;
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.service.PayrollService;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.service.entity.SalonService;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.service.repository.SalonServiceRepository;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.user.entity.User;
-import com.stylishlab.bridebox.stylishlab_bridebox_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ public class SaleServiceImpl implements SaleService {
     private final SalonServiceRepository salonServiceRepository;
     private final EmployeeCommissionRepository commissionRepository;
     private final UserRepository userRepository;
+    private final PayrollService payrollService;
 
     @Override
     @Transactional
@@ -115,7 +117,12 @@ public class SaleServiceImpl implements SaleService {
                 .createdBy(createdBy)
                 .build();
 
-        return toResponse(saleRepository.save(sale));
+        sale = saleRepository.save(sale);
+
+        // Hook: Update employee's live salary tracker
+        payrollService.addCommissionToTracker(employee.getId(), employeeAmount);
+
+        return toResponse(sale);
     }
 
     @Override

@@ -18,9 +18,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { User, Lock, Shield, LogOut, KeyRound } from "lucide-react";
+import { Lock, Shield, LogOut, KeyRound, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+import { EmployeeSalaryModal } from "@/components/employee/EmployeeSalaryModal";
 
 export default function EmployeeProfile() {
   const { logout } = useAuth();
@@ -29,6 +30,7 @@ export default function EmployeeProfile() {
   const profile = res?.data;
 
   const [isPwdOpen, setIsPwdOpen] = useState(false);
+  const [isSalaryOpen, setIsSalaryOpen] = useState(false);
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",
@@ -111,6 +113,22 @@ export default function EmployeeProfile() {
             <p>Change Password</p>
             <p className="text-[10px] text-muted-foreground font-normal">
               Secure your account with a new password
+            </p>
+          </div>
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={() => setIsSalaryOpen(true)}
+          className="w-full h-14 justify-start px-6 gap-4 text-base font-medium border-muted/20 hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all rounded-xl"
+        >
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+            <Wallet className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="flex-1 text-left">
+            <p>Salary & Advances</p>
+            <p className="text-[10px] text-muted-foreground font-normal">
+              Check pending payroll, history, and advance amounts
             </p>
           </div>
         </Button>
@@ -220,6 +238,8 @@ export default function EmployeeProfile() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <EmployeeSalaryModal open={isSalaryOpen} onOpenChange={setIsSalaryOpen} />
     </div>
   );
 }
