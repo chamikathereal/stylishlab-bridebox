@@ -167,7 +167,7 @@ public class ReportService {
                 .totalBills(BigDecimal.ZERO)
                 .ownerRevenue(ownerRevenue)
                 .netProfit(netProfit)
-                .totalTransactions(saleRepository.count())
+                .totalTransactions(saleRepository.countByCreatedAtBetween(from, to))
                 .build();
     }
 }

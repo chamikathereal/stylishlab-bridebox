@@ -11,13 +11,18 @@ import java.time.LocalDateTime;
 @Builder
 public class ExpenseResponse {
     private Long id;
+    private Long categoryId;
+    private Long payeeId;
     private String categoryName;
     private String categoryType;
     private String payeeName;
     private BigDecimal amount;
+    private BigDecimal lastAmount;
     private String note;
     private String recordedByUsername;
     private String paidBy;
     private LocalDate expenseDate;
+    private String lastEditReason;
+    private String lastEditNote;
     private LocalDateTime createdAt;
 }

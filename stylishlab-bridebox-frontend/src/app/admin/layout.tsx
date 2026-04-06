@@ -9,6 +9,7 @@ import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { PageLoader } from '@/components/shared/LoadingSpinner';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
+import { ModeToggle } from '@/components/shared/ModeToggle';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -54,7 +55,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </nav>
           </div>
           <div className="flex flex-1 items-center justify-between">
-            <h1 className="text-sm font-semibold text-muted-foreground md:hidden gradient-text">Stylish Lab</h1>
+            <h1 className="text-sm font-semibold text-muted-foreground md:hidden gradient-text whitespace-nowrap">Stylish Lab</h1>
+            <div className="flex items-center gap-2 ml-auto">
+              <ModeToggle />
+            </div>
           </div>
         </header>
 

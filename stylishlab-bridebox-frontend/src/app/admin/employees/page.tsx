@@ -10,7 +10,7 @@ import {
   useCreate3,
   useToggleStatus2,
   useUpdateCommission,
-  useUpdate2,
+  useUpdate3,
 } from "@/api/generated/endpoints/employee-management/employee-management";
 import {
   useEmployeeEarnings,
@@ -62,6 +62,8 @@ import {
   Target,
   Users,
   Zap,
+  Calendar,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -74,7 +76,7 @@ export default function EmployeesPage() {
   const { data: res, isLoading } = useGetAll4();
   const createMutation = useCreate3();
   const toggleMutation = useToggleStatus2();
-  const updateDetailsMutation = useUpdate2();
+  const updateDetailsMutation = useUpdate3();
   const updateCommissionMutation = useUpdateCommission();
   const queryClient = useQueryClient();
   const employees = (res?.data ?? []) as EmployeeResponse[];
@@ -139,7 +141,7 @@ export default function EmployeesPage() {
   // Individual Query
   const individualQuery = useEmployeeEarnings(
     kpiEmployeeId === "all" ? 0 : parseInt(kpiEmployeeId),
-    undefined,
+    { date: selectedDate },
     { query: { enabled: kpiEmployeeId !== "all" } },
   );
 
@@ -187,7 +189,7 @@ export default function EmployeesPage() {
       return {
         sales: earnings ?? 0,
         services: services ?? 0,
-        commission: 0, // Individual hook doesn't break down commission
+        commission: (earnings ?? 0) * 0.5, // Estimating 50% commission for the KPI summary if not provided by API
         efficiency: (earnings ?? 0) / (services || 1),
       };
     }
@@ -197,7 +199,7 @@ export default function EmployeesPage() {
 
   const { data: perfRes, isLoading: perfLoading } = useEmployeeEarnings(
     perfEmployeeId ?? 0,
-    undefined,
+    { date: selectedDate },
     { query: { enabled: !!perfEmployeeId } },
   );
   const performance = perfRes?.data as EmployeeEarningsResponse | undefined;
@@ -320,12 +322,12 @@ export default function EmployeesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <StatCard
           title="Revenue Generated"
           value={formatCurrency(kpis.sales)}
           icon={DollarSign}
-          subtitle={`${kpiPeriod === "yearly" ? selectedYear : kpiPeriod === "total" ? "All Time" : selectedDate}`}
+          subtitle={`${kpiPeriod === "yearly" ? selectedYear : kpiPeriod === "total" ? "All Time" : kpiPeriod === "monthly" ? selectedMonth : selectedDate}`}
           variant="primary"
         />
         <StatCard
@@ -352,55 +354,87 @@ export default function EmployeesPage() {
             variant="warning"
           />
         )}
-        <div className="flex flex-col gap-2 justify-center p-4 bg-muted/20 rounded-xl border border-border/50 backdrop-blur-sm">
-          <div className="flex flex-col gap-1">
-            <Label className="text-[10px] uppercase text-muted-foreground font-bold">
-              Target Selection
-            </Label>
-            <Select
-              value={kpiEmployeeId}
-              onValueChange={(val) => val && setKpiEmployeeId(val)}
-            >
-              <SelectTrigger className="h-8 w-full text-xs bg-background">
-                <SelectValue placeholder="All Team">
-                  {kpiEmployeeId === "all"
-                    ? "All Team Members"
-                    : employees.find((e) => e.id?.toString() === kpiEmployeeId)
-                        ?.fullName}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Team Members</SelectItem>
-                {employees.map((e) => (
-                  <SelectItem key={e.id} value={e.id!.toString()}>
-                    {e.fullName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label className="text-[10px] uppercase text-muted-foreground font-bold">
-              Time Filter
-            </Label>
-            <Select
-              value={kpiPeriod}
-              onValueChange={(v) => v && setKpiPeriod(v as typeof kpiPeriod)}
-            >
-              <SelectTrigger className="h-8 w-full text-xs bg-background">
-                <SelectValue placeholder="Monthly" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="yearly">Yearly</SelectItem>
-                {kpiEmployeeId === "all" && (
-                  <SelectItem value="total">All Time</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+      </div>
+
+      {/* Optimized Filter Row */}
+      <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/20 rounded-2xl border border-border/50 backdrop-blur-sm">
+        <div className="flex-1 min-w-[200px]">
+          <Label className="text-[10px] uppercase text-muted-foreground font-bold mb-1.5 ml-1">
+            Target Selection
+          </Label>
+          <Select
+            value={kpiEmployeeId}
+            onValueChange={(val) => val && setKpiEmployeeId(val)}
+          >
+            <SelectTrigger className="h-9 w-full text-xs bg-background/50 border-border/50 rounded-lg">
+              <SelectValue placeholder="All Team">
+                {kpiEmployeeId === "all"
+                  ? "All Team Members"
+                  : employees.find((e) => e.id?.toString() === kpiEmployeeId)
+                      ?.fullName}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Team Members</SelectItem>
+              {employees.map((e) => (
+                <SelectItem key={e.id} value={e.id!.toString()}>
+                  {e.fullName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1 min-w-[140px]">
+          <Label className="text-[10px] uppercase text-muted-foreground font-bold mb-1.5 ml-1">
+            Time Filter
+          </Label>
+          <Select
+            value={kpiPeriod}
+            onValueChange={(v) => v && setKpiPeriod(v as typeof kpiPeriod)}
+          >
+            <SelectTrigger className="h-9 w-full text-xs bg-background/50 border-border/50 rounded-lg">
+              <SelectValue placeholder="Monthly" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">Daily</SelectItem>
+              <SelectItem value="weekly">Weekly</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="yearly">Yearly</SelectItem>
+              {kpiEmployeeId === "all" && (
+                <SelectItem value="total">All Time</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1 min-w-[140px]">
+          <Label className="text-[10px] uppercase text-muted-foreground font-bold mb-1.5 flex items-center gap-1 ml-1">
+            <Calendar className="w-2.5 h-2.5" /> Select Date
+          </Label>
+          <Input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="h-9 w-full text-xs bg-background/50 border-border/50 rounded-lg font-medium"
+          />
+        </div>
+
+        <div className="flex items-end self-end mb-px">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 px-3 text-xs gap-1.5 hover:bg-background/80 hover:text-primary transition-all rounded-lg border border-transparent hover:border-border/50 group"
+            onClick={() => {
+              setKpiEmployeeId("all");
+              setKpiPeriod("monthly");
+              setSelectedDate(today);
+              toast.success("Filters reset to default");
+            }}
+          >
+            <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-[-180deg] transition-transform duration-500" />
+            Reset
+          </Button>
         </div>
       </div>
 

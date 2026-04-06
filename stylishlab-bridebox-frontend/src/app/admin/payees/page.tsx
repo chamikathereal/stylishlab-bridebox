@@ -1,76 +1,533 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
-import { useGetAll2, useCreate2, useToggleStatus1 } from '@/api/generated/endpoints/payee-debtor-management/payee-debtor-management';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Building2, Phone } from 'lucide-react';
-import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
-import { PayeeResponse } from '@/api/generated/model';
+import { useState } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import {
+  useGetAll2,
+  useCreate2,
+  useUpdate1,
+  useToggleStatus1,
+} from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Plus,
+  Building2,
+  Phone,
+  Edit2,
+  Info,
+  UserSquare2,
+  StickyNote,
+  Power,
+  Search,
+  LayoutGrid,
+  List,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { PayeeResponse } from "@/api/generated/model";
+import { cn } from "@/lib/utils";
 
 export default function PayeesPage() {
   const { data: res, isLoading } = useGetAll2();
   const createMutation = useCreate2();
+  const updateMutation = useUpdate1();
   const toggleMutation = useToggleStatus1();
   const queryClient = useQueryClient();
+
   const payees = (res?.data ?? []) as PayeeResponse[];
 
-  const [form, setForm] = useState({ name: '', type: '', mobile: '', notes: '' });
   const [open, setOpen] = useState(false);
+  const [editingPayee, setEditingPayee] = useState<PayeeResponse | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
+  const [form, setForm] = useState({
+    name: "",
+    type: "",
+    mobile: "",
+    notes: "",
+  });
 
-  const handleCreate = () => {
-    if (!form.name || !form.type) { toast.error('Name and type required'); return; }
-    createMutation.mutate(
-      { data: { name: form.name, type: form.type, mobile: form.mobile || undefined, notes: form.notes || undefined } },
-      { onSuccess: () => { toast.success('Payee created!'); queryClient.invalidateQueries(); setOpen(false); setForm({ name: '', type: '', mobile: '', notes: '' }); }, onError: () => toast.error('Failed to create payee') }
-    );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredPayees = payees.filter(
+    (p) =>
+      p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.mobile?.includes(searchQuery),
+  );
+
+  const resetForm = () => {
+    setForm({ name: "", type: "", mobile: "", notes: "" });
+    setEditingPayee(null);
+  };
+
+  const handleOpenNew = () => {
+    resetForm();
+    setOpen(true);
+  };
+
+  const handleEdit = (p: PayeeResponse) => {
+    setEditingPayee(p);
+    setForm({
+      name: p.name || "",
+      type: p.type || "",
+      mobile: p.mobile || "",
+      notes: p.notes || "",
+    });
+    setOpen(true);
+  };
+
+  const handleSubmit = () => {
+    if (!form.name || !form.type) {
+      toast.error("Name and type are required");
+      return;
+    }
+
+    const payload = {
+      data: {
+        name: form.name,
+        type: form.type,
+        mobile: form.mobile || undefined,
+        notes: form.notes || undefined,
+      },
+    };
+
+    if (editingPayee) {
+      updateMutation.mutate(
+        { id: editingPayee.id!, data: payload.data },
+        {
+          onSuccess: () => {
+            toast.success("Payee updated successfully!");
+            queryClient.invalidateQueries();
+            setOpen(false);
+            resetForm();
+          },
+          onError: () => toast.error("Failed to update payee"),
+        },
+      );
+    } else {
+      createMutation.mutate(payload, {
+        onSuccess: () => {
+          toast.success("New payee registered!");
+          queryClient.invalidateQueries();
+          setOpen(false);
+          resetForm();
+        },
+        onError: () => toast.error("Failed to register payee"),
+      });
+    }
   };
 
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div>
-      <PageHeader title="Payees / Debtors" description={`${payees.length} registered payees`}>
-        <Button className="gap-2 bg-linear-to-r from-emerald-600 to-teal-600 text-white" onClick={() => setOpen(true)}><Plus className="w-4 h-4" /> Add Payee</Button>
+    <div className="space-y-6">
+      <PageHeader
+        title="Payee Directory"
+        description={`${payees.length} registered business entities and debtors`}
+      >
+        <Button
+          className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20"
+          onClick={handleOpenNew}
+        >
+          <Plus className="w-4 h-4" /> Register New Payee
+        </Button>
       </PageHeader>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>New Payee</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div><Label>Name *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
-            <div><Label>Type *</Label><select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}><option value="">Select type</option><option value="SUPPLIER">Supplier</option><option value="BANK">Bank</option><option value="OTHER">Other</option></select></div>
-            <div><Label>Mobile</Label><Input value={form.mobile} onChange={e => setForm({ ...form, mobile: e.target.value })} /></div>
-            <div><Label>Notes</Label><Input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+      {/* Advanced Filter & View Bar */}
+      <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/20 rounded-2xl border border-border/50 backdrop-blur-sm">
+        <div className="relative flex-1 min-w-[280px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, type or mobile..."
+            className="pl-9 h-10 bg-background/50 border-border/50"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider px-4 border-l border-border/50 h-8">
+          <Info className="w-3.5 h-3.5" />
+          {filteredPayees.length} Results
+        </div>
+
+        <div className="flex items-center gap-1.5 p-1 bg-background/50 rounded-xl border border-border/50 ml-auto">
+          <Button
+            variant={viewMode === "grid" ? "default" : "ghost"}
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => setViewMode("grid")}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={viewMode === "table" ? "default" : "ghost"}
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => setViewMode("table")}
+          >
+            <List className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
+      <Dialog
+        open={open}
+        onOpenChange={(val) => {
+          setOpen(val);
+          if (!val) resetForm();
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <UserSquare2 className="w-5 h-5 text-emerald-600" />
+              </div>
+              {editingPayee ? "Update Payee Details" : "Register New Payee"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingPayee
+                ? "Modify the identity and contact information for this business entity."
+                : "Add a new supplier, bank, or debtor to your business ecosystem."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 py-4">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground ml-1">
+                  Entity Name *
+                </Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="E.g. Commercial Bank, Beauty Supplies"
+                    className="pl-9 h-11"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground ml-1">
+                  Classification *
+                </Label>
+                <select
+                  className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                  value={form.type}
+                  onChange={(e) => setForm({ ...form, type: e.target.value })}
+                >
+                  <option value="">Select Category</option>
+                  <option value="SUPPLIER">Supplier</option>
+                  <option value="BANK">Bank</option>
+                  <option value="OTHER">Other Management</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground ml-1">
+                  Contact Number
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="+94 XX XXX XXXX"
+                    className="pl-9 h-11"
+                    value={form.mobile}
+                    onChange={(e) =>
+                      setForm({ ...form, mobile: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground ml-1">
+                  Administrative Notes
+                </Label>
+                <div className="relative">
+                  <StickyNote className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                  <textarea
+                    placeholder="Add specific details or account info..."
+                    className="w-full min-h-[100px] rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                    value={form.notes}
+                    onChange={(e) =>
+                      setForm({ ...form, notes: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleCreate} disabled={createMutation.isPending}>Create</Button></DialogFooter>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={handleSubmit}
+              disabled={createMutation.isPending || updateMutation.isPending}
+            >
+              {editingPayee ? "Save Changes" : "Complete Registration"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {payees.map((p) => (
-          <Card key={p.id} className="glass-card-hover">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Building2 className="w-5 h-5 text-primary" /></div>
-                  <div><p className="font-semibold text-sm">{p.name}</p><Badge variant="secondary" className="text-[10px] mt-1">{p.type}</Badge></div>
+      {viewMode === "grid" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredPayees.map((p) => (
+            <Card
+              key={p.id}
+              className="group hover:shadow-lg transition-all duration-300 border-border/50 bg-background/50 backdrop-blur-sm"
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-muted/50 flex items-center justify-center border border-border/10 group-hover:bg-emerald-500/10 transition-colors">
+                      <Building2 className="w-5 h-5 text-muted-foreground group-hover:text-emerald-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm tracking-tight">
+                        {p.name}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">
+                          {p.type}
+                        </span>
+                        <div
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            p.isActive
+                              ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                              : "bg-muted-foreground/30",
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Badge variant={p.isActive ? 'default' : 'secondary'}>{p.isActive ? 'Active' : 'Inactive'}</Badge>
-              </div>
-              {p.mobile && <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2"><Phone className="w-3 h-3" /> {p.mobile}</p>}
-              <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => toggleMutation.mutate({ id: p.id! }, { onSuccess: () => { toast.success('Toggled'); queryClient.invalidateQueries(); } })}>Toggle Status</Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+
+                <div className="space-y-2 mb-4">
+                  {p.mobile && (
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">
+                      Contact Number
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground px-0.5">
+                    <Phone className="w-3 h-3 opacity-50" />
+                    <span>{p.mobile}</span>
+                  </div>
+                  {p.notes && (
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">
+                      Notes
+                    </span>
+                  )}
+                  <p className="text-[11px] text-muted-foreground/60 leading-relaxed line-clamp-1 mb-4 px-0.5 italic">
+                    {p.notes}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 pt-3 border-t border-border/40">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-[10px] font-bold flex-1 gap-1.5 hover:bg-emerald-500/5 hover:text-emerald-600 transition-all"
+                    onClick={() => handleEdit(p)}
+                  >
+                    <Edit2 className="w-3 h-3" />
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className={cn(
+                      "h-8 px-2 text-[10px] font-bold transition-all",
+                      p.isActive
+                        ? "hover:bg-red-500/5 hover:text-red-500"
+                        : "hover:bg-emerald-500/5 hover:text-emerald-600",
+                    )}
+                    onClick={() =>
+                      toggleMutation.mutate(
+                        { id: p.id! },
+                        {
+                          onSuccess: () => {
+                            toast.success("Status updated");
+                            queryClient.invalidateQueries();
+                          },
+                        },
+                      )
+                    }
+                  >
+                    <Power className="w-3 h-3 mr-1.5" />
+                    {p.isActive ? "Off" : "On"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="glass-card overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-muted-foreground/10 bg-muted/5">
+                <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
+                  Entity
+                </TableHead>
+                <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
+                  Type
+                </TableHead>
+                <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
+                  Contact
+                </TableHead>
+                <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
+                  Status
+                </TableHead>
+                <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPayees.map((p) => (
+                <TableRow
+                  key={p.id}
+                  className="group hover:bg-muted/10 transition-colors border-muted-foreground/10"
+                >
+                  <TableCell className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center border border-border/10">
+                        <Building2 className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm">{p.name}</span>
+                        <span className="text-[10px] text-muted-foreground italic line-clamp-1 max-w-[200px]">
+                          {p.notes || "No notes registered"}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-bold uppercase tracking-wider bg-muted/30"
+                    >
+                      {p.type}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground lowercase">
+                      <Phone className="w-3 h-3 opacity-50 capitalize" />
+                      <span>{p.mobile || "Private"}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={cn(
+                          "w-2 h-2 rounded-full",
+                          p.isActive
+                            ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                            : "bg-muted-foreground/30",
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          "text-[10px] font-bold uppercase tracking-widest",
+                          p.isActive
+                            ? "text-emerald-600"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        {p.isActive ? "Connected" : "Disabled"}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0 hover:bg-emerald-500/5 hover:text-emerald-600"
+                        onClick={() => handleEdit(p)}
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={cn(
+                          "h-8 w-8 p-0",
+                          p.isActive
+                            ? "hover:bg-red-500/5 hover:text-red-500"
+                            : "hover:bg-emerald-500/5 hover:text-emerald-600",
+                        )}
+                        onClick={() =>
+                          toggleMutation.mutate(
+                            { id: p.id! },
+                            {
+                              onSuccess: () => {
+                                toast.success("Updated");
+                                queryClient.invalidateQueries();
+                              },
+                            },
+                          )
+                        }
+                      >
+                        <Power className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      {filteredPayees.length === 0 && (
+        <div className="py-20 flex flex-col items-center justify-center bg-muted/5 rounded-3xl border-2 border-dashed border-border/50">
+          <UserSquare2 className="w-12 h-12 text-muted-foreground/20 mb-4" />
+          <p className="text-sm font-bold text-muted-foreground uppercase opacity-50">
+            No payees match your search criteria
+          </p>
+          <Button
+            variant="link"
+            className="text-emerald-600 mt-2"
+            onClick={() => setSearchQuery("")}
+          >
+            Clear filters
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

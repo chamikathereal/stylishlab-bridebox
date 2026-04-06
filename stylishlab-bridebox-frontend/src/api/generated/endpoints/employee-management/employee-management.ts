@@ -137,7 +137,7 @@ export function useGetById2<TData = Awaited<ReturnType<typeof getById2>>, TError
 /**
  * @summary Update employee details
  */
-export const update2 = (
+export const update3 = (
     id: number,
     updateEmployeeRequest: BodyType<UpdateEmployeeRequest>,
  options?: SecondParameter<typeof customInstance>,) => {
@@ -153,11 +153,11 @@ export const update2 = (
   
 
 
-export const getUpdate2MutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update2>>, TError,{id: number;data: BodyType<UpdateEmployeeRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof update2>>, TError,{id: number;data: BodyType<UpdateEmployeeRequest>}, TContext> => {
+export const getUpdate3MutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update3>>, TError,{id: number;data: BodyType<UpdateEmployeeRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof update3>>, TError,{id: number;data: BodyType<UpdateEmployeeRequest>}, TContext> => {
 
-const mutationKey = ['update2'];
+const mutationKey = ['update3'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -167,10 +167,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof update2>>, {id: number;data: BodyType<UpdateEmployeeRequest>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof update3>>, {id: number;data: BodyType<UpdateEmployeeRequest>}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  update2(id,data,requestOptions)
+          return  update3(id,data,requestOptions)
         }
 
         
@@ -178,23 +178,23 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type Update2MutationResult = NonNullable<Awaited<ReturnType<typeof update2>>>
-    export type Update2MutationBody = BodyType<UpdateEmployeeRequest>
-    export type Update2MutationError = ErrorType<unknown>
+    export type Update3MutationResult = NonNullable<Awaited<ReturnType<typeof update3>>>
+    export type Update3MutationBody = BodyType<UpdateEmployeeRequest>
+    export type Update3MutationError = ErrorType<unknown>
 
     /**
  * @summary Update employee details
  */
-export const useUpdate2 = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update2>>, TError,{id: number;data: BodyType<UpdateEmployeeRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useUpdate3 = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update3>>, TError,{id: number;data: BodyType<UpdateEmployeeRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof update2>>,
+        Awaited<ReturnType<typeof update3>>,
         TError,
         {id: number;data: BodyType<UpdateEmployeeRequest>},
         TContext
       > => {
 
-      const mutationOptions = getUpdate2MutationOptions(options);
+      const mutationOptions = getUpdate3MutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

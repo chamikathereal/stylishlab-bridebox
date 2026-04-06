@@ -84,6 +84,7 @@ export * from './settleSalaryRequest';
 export * from './updateCommissionRequest';
 export * from './updateCustomerRequest';
 export * from './updateEmployeeRequest';
+export * from './updateExpenseRequest';
 export * from './updatePayeeRequest';
 export * from './updateProfileRequest';
 export * from './updateServiceRequest';

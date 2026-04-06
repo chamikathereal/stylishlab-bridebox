@@ -28,8 +28,10 @@ import type {
   ApiResponseExpenseResponse,
   ApiResponseListExpenseCategoryResponse,
   ApiResponseListExpenseResponse,
+  ApiResponseVoid,
   CreateExpenseRequest,
-  GetByDateRange1Params
+  GetByDateRange1Params,
+  UpdateExpenseRequest
 } from '../../model';
 
 import { customInstance } from '../../../axios-instance';
@@ -41,6 +43,133 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 /**
+ * Employees can only update same-day expenses they recorded
+ * @summary Update expense
+ */
+export const update2 = (
+    id: number,
+    updateExpenseRequest: BodyType<UpdateExpenseRequest>,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<ApiResponseExpenseResponse>(
+      {url: `/api/expenses/${id}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateExpenseRequest
+    },
+      options);
+    }
+  
+
+
+export const getUpdate2MutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update2>>, TError,{id: number;data: BodyType<UpdateExpenseRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof update2>>, TError,{id: number;data: BodyType<UpdateExpenseRequest>}, TContext> => {
+
+const mutationKey = ['update2'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof update2>>, {id: number;data: BodyType<UpdateExpenseRequest>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  update2(id,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type Update2MutationResult = NonNullable<Awaited<ReturnType<typeof update2>>>
+    export type Update2MutationBody = BodyType<UpdateExpenseRequest>
+    export type Update2MutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update expense
+ */
+export const useUpdate2 = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update2>>, TError,{id: number;data: BodyType<UpdateExpenseRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof update2>>,
+        TError,
+        {id: number;data: BodyType<UpdateExpenseRequest>},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdate2MutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Employees can only delete same-day expenses they recorded
+ * @summary Delete expense
+ */
+export const _delete = (
+    id: number,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<ApiResponseVoid>(
+      {url: `/api/expenses/${id}`, method: 'DELETE'
+    },
+      options);
+    }
+  
+
+
+export const getDeleteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['_delete'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof _delete>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  _delete(id,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type _DeleteMutationResult = NonNullable<Awaited<ReturnType<typeof _delete>>>
+    
+    export type _DeleteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete expense
+ */
+export const useDelete = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof _delete>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof _delete>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * @summary Get all expenses
  */
 export const getAll3 = (
@@ -197,6 +326,97 @@ export const useRecord = <TError = ErrorType<unknown>,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * @summary Get current user's expenses
+ */
+export const getMyExpenses = (
+    
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ApiResponseListExpenseResponse>(
+      {url: `/api/expenses/my`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetMyExpensesQueryKey = () => {
+    return [
+    `/api/expenses/my`
+    ] as const;
+    }
+
+    
+export const getGetMyExpensesQueryOptions = <TData = Awaited<ReturnType<typeof getMyExpenses>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyExpenses>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyExpensesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyExpenses>>> = ({ signal }) => getMyExpenses(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyExpenses>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMyExpensesQueryResult = NonNullable<Awaited<ReturnType<typeof getMyExpenses>>>
+export type GetMyExpensesQueryError = ErrorType<unknown>
+
+
+export function useGetMyExpenses<TData = Awaited<ReturnType<typeof getMyExpenses>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyExpenses>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyExpenses>>,
+          TError,
+          Awaited<ReturnType<typeof getMyExpenses>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMyExpenses<TData = Awaited<ReturnType<typeof getMyExpenses>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyExpenses>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyExpenses>>,
+          TError,
+          Awaited<ReturnType<typeof getMyExpenses>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMyExpenses<TData = Awaited<ReturnType<typeof getMyExpenses>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyExpenses>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get current user's expenses
+ */
+
+export function useGetMyExpenses<TData = Awaited<ReturnType<typeof getMyExpenses>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyExpenses>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMyExpensesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+/**
  * @summary Get expenses by date range
  */
 export const getByDateRange1 = (

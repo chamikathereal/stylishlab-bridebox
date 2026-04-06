@@ -18,10 +18,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Lock, Shield, LogOut, KeyRound, Wallet } from "lucide-react";
+import { Lock, Shield, LogOut, KeyRound, Wallet, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { EmployeeSalaryModal } from "@/components/employee/EmployeeSalaryModal";
+import { EmployeeExpenseModal } from "@/components/employee/EmployeeExpenseModal";
 
 export default function EmployeeProfile() {
   const { logout } = useAuth();
@@ -31,6 +32,7 @@ export default function EmployeeProfile() {
 
   const [isPwdOpen, setIsPwdOpen] = useState(false);
   const [isSalaryOpen, setIsSalaryOpen] = useState(false);
+  const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",
@@ -129,6 +131,21 @@ export default function EmployeeProfile() {
             <p>Salary & Advances</p>
             <p className="text-[10px] text-muted-foreground font-normal">
               Check pending payroll, history, and advance amounts
+            </p>
+          </div>
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setIsExpenseOpen(true)}
+          className="w-full h-14 justify-start px-6 gap-4 text-base font-medium border-muted/20 hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all rounded-xl"
+        >
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+            <Plus className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="flex-1 text-left">
+            <p>Record Expenses</p>
+            <p className="text-[10px] text-muted-foreground font-normal">
+              Directly record payments to suppliers or collectors
             </p>
           </div>
         </Button>
@@ -240,6 +257,7 @@ export default function EmployeeProfile() {
       </Dialog>
 
       <EmployeeSalaryModal open={isSalaryOpen} onOpenChange={setIsSalaryOpen} />
+      <EmployeeExpenseModal open={isExpenseOpen} onOpenChange={setIsExpenseOpen} />
     </div>
   );
 }

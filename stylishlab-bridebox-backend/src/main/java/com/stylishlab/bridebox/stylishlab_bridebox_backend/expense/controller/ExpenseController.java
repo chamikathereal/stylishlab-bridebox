@@ -43,6 +43,28 @@ public class ExpenseController {
         return ResponseEntity.ok(ApiResponse.ok(expenseService.getCategories()));
     }
 
+    @GetMapping("/my")
+    @Operation(summary = "Get current user's expenses")
+    public ResponseEntity<ApiResponse<List<ExpenseResponse>>> getMyExpenses(Authentication auth) {
+        return ResponseEntity.ok(ApiResponse.ok(expenseService.getExpensesByUser(auth.getName())));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update expense", description = "Employees can only update same-day expenses they recorded")
+    public ResponseEntity<ApiResponse<ExpenseResponse>> update(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateExpenseRequest request,
+            Authentication auth) {
+        return ResponseEntity.ok(ApiResponse.ok("Expense updated", expenseService.updateExpense(id, request, auth.getName())));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete expense", description = "Employees can only delete same-day expenses they recorded")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id, Authentication auth) {
+        expenseService.deleteExpense(id, auth.getName());
+        return ResponseEntity.ok(ApiResponse.ok("Expense deleted", null));
+    }
+
     @GetMapping("/date-range")
     @Operation(summary = "Get expenses by date range")
     public ResponseEntity<ApiResponse<List<ExpenseResponse>>> getByDateRange(

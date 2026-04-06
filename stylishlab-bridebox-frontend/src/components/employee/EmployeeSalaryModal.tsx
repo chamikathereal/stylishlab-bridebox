@@ -159,7 +159,7 @@ export function EmployeeSalaryModal({
                         </p>
                       </div>
                     </div>
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-emerald-600 tracking-tight sm:pl-12 mt-1 break-words">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-emerald-600 tracking-tight sm:pl-12 mt-1 wrap-break-word">
                       {formatCurrency(tracker?.netPayable)}
                     </h1>
                   </div>
@@ -438,7 +438,7 @@ export function EmployeeSalaryModal({
                             <div className="text-right">
                               <p className="text-[10px] text-muted-foreground uppercase font-medium">Advances Taken</p>
                               <p className="text-xs font-semibold text-amber-600">
-                                {h.totalAdvances > 0 ? `-${formatCurrency(h.totalAdvances)}` : formatCurrency(0)}
+                                {(h.totalAdvances ?? 0) > 0 ? `-${formatCurrency(h.totalAdvances)}` : formatCurrency(0)}
                               </p>
                             </div>
                           </div>

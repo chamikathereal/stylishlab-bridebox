@@ -57,4 +57,6 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
 
     @Query("SELECT COALESCE(SUM(s.dueAmount), 0) FROM Sale s")
     BigDecimal sumDueAmount();
+
+    long countByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
 }

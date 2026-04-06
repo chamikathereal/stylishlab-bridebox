@@ -8,13 +8,18 @@
 
 export interface ExpenseResponse {
   id?: number;
+  categoryId?: number;
+  payeeId?: number;
   categoryName?: string;
   categoryType?: string;
   payeeName?: string;
   amount?: number;
+  lastAmount?: number;
   note?: string;
   recordedByUsername?: string;
   paidBy?: string;
   expenseDate?: string;
+  lastEditReason?: string;
+  lastEditNote?: string;
   createdAt?: string;
 }

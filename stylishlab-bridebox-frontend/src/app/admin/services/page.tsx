@@ -56,7 +56,7 @@ export default function ServicesPage() {
     description: "",
   });
   const [open, setOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const [editingService, setEditingService] = useState<ServiceResponse | null>(
     null,
   );

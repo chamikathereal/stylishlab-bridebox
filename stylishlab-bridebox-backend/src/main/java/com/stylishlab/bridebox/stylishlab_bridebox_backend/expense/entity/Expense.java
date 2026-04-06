@@ -33,6 +33,9 @@ public class Expense {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
+    @Column(name = "last_amount", precision = 10, scale = 2)
+    private BigDecimal lastAmount;
+
     private String note;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -44,6 +47,12 @@ public class Expense {
 
     @Column(name = "expense_date", nullable = false)
     private LocalDate expenseDate;
+
+    @Column(name = "last_edit_reason", length = 100)
+    private String lastEditReason;
+
+    @Column(name = "last_edit_note", columnDefinition = "TEXT")
+    private String lastEditNote;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

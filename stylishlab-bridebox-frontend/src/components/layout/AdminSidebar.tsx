@@ -92,22 +92,22 @@ export function AdminSidebar() {
                   <SidebarMenuButton
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                  />
+                  >
+                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-linear-to-br from-emerald-500 to-teal-600 text-sidebar-primary-foreground shadow-lg shadow-emerald-500/20 ring-1 ring-white/20">
+                      <Scissors className="size-4" />
+                    </div>
+                    <div className="grid flex-1 text-left text-sm leading-tight ml-2 group-data-[state=collapsed]:hidden">
+                      <span className="truncate font-bold gradient-text whitespace-nowrap tracking-tight">
+                        Stylish Lab
+                      </span>
+                      <span className="truncate text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                        Bridebox Admin
+                      </span>
+                    </div>
+                    <ChevronsUpDown className="ml-auto size-4 text-muted-foreground/50 group-data-[state=collapsed]:hidden" />
+                  </SidebarMenuButton>
                 }
-              >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-linear-to-br from-emerald-500 to-teal-600 text-sidebar-primary-foreground shadow-lg shadow-emerald-500/20 ring-1 ring-white/20">
-                  <Scissors className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight ml-2 group-data-[state=collapsed]:hidden">
-                  <span className="truncate font-bold gradient-text whitespace-nowrap tracking-tight">
-                    Stylish Lab
-                  </span>
-                  <span className="truncate text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                    Bridebox Admin
-                  </span>
-                </div>
-                <ChevronsUpDown className="ml-auto size-4 text-muted-foreground/50 group-data-[state=collapsed]:hidden" />
-              </DropdownMenuTrigger>
+              />
               <DropdownMenuContent
                 className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
                 align="start"
@@ -172,22 +172,22 @@ export function AdminSidebar() {
               <SidebarMenuButton
                 size="lg"
                 className="w-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              />
+              >
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                    {user?.username?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight ml-2 transition-all duration-300 group-data-[state=collapsed]:hidden">
+                  <span className="truncate font-semibold">{user?.username}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    Administrator
+                  </span>
+                </div>
+                <ChevronRight className="ml-auto size-4 text-muted-foreground/50 group-data-[state=collapsed]:hidden" />
+              </SidebarMenuButton>
             }
-          >
-            <Avatar className="h-8 w-8 rounded-lg">
-              <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                {user?.username?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight ml-2 transition-all duration-300 group-data-[state=collapsed]:hidden">
-              <span className="truncate font-semibold">{user?.username}</span>
-              <span className="truncate text-xs text-muted-foreground">
-                Administrator
-              </span>
-            </div>
-            <ChevronRight className="ml-auto size-4 text-muted-foreground/50 group-data-[state=collapsed]:hidden" />
-          </DropdownMenuTrigger>
+          />
           <DropdownMenuContent
             className="min-w-56 rounded-lg"
             side="right"

@@ -6,7 +6,7 @@ import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
   useGetAll5,
   useCreate4,
-  useUpdate3,
+  useUpdate4,
   useSearch,
 } from "@/api/generated/endpoints/customer-management/customer-management";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +28,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Search, User, Phone, Pencil, LayoutGrid, List } from "lucide-react";
+import {
+  Plus,
+  Search,
+  User,
+  Phone,
+  Pencil,
+  LayoutGrid,
+  List,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { CustomerResponse } from "@/api/generated/model";
@@ -41,7 +49,7 @@ export default function CustomersPage() {
     { query: { enabled: searchName.length > 1 } },
   );
   const createMutation = useCreate4();
-  const updateMutation = useUpdate3();
+  const updateMutation = useUpdate4();
   const queryClient = useQueryClient();
 
   const customers = (
@@ -49,7 +57,7 @@ export default function CustomersPage() {
   ) as CustomerResponse[];
   const [form, setForm] = useState({ customerName: "", mobile: "", notes: "" });
   const [open, setOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const [editingCustomer, setEditingCustomer] =
     useState<CustomerResponse | null>(null);
 
@@ -301,7 +309,10 @@ export default function CustomersPage() {
                 ))}
                 {customers.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-16 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={5}
+                      className="py-16 text-center text-muted-foreground"
+                    >
                       <User className="w-12 h-12 mx-auto mb-3 opacity-20" />
                       <p>No customers found</p>
                     </TableCell>

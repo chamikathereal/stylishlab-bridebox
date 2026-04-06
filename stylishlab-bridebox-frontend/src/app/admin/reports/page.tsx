@@ -156,17 +156,17 @@ function ReportChart({
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis
               dataKey="name"
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--muted-foreground)"
               fontSize={12}
             />
-            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <YAxis stroke="var(--muted-foreground)" fontSize={12} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
                 borderRadius: "8px",
               }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -319,7 +319,7 @@ export default function ReportsPage() {
           <div className="mb-4">
             <Select
               value={yearlyYear.toString()}
-              onValueChange={(val) => setYearlyYear(parseInt(val))}
+              onValueChange={(val: string | null) => val && setYearlyYear(parseInt(val))}
             >
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Select year" />

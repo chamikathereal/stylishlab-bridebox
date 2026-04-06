@@ -132,7 +132,7 @@ export function useGetById4<TData = Awaited<ReturnType<typeof getById4>>, TError
 /**
  * @summary Update bill
  */
-export const update4 = (
+export const update5 = (
     id: number,
     createBillRequest: BodyType<CreateBillRequest>,
  options?: SecondParameter<typeof customInstance>,) => {
@@ -148,11 +148,11 @@ export const update4 = (
   
 
 
-export const getUpdate4MutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update4>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof update4>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext> => {
+export const getUpdate5MutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update5>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof update5>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext> => {
 
-const mutationKey = ['update4'];
+const mutationKey = ['update5'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -162,10 +162,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof update4>>, {id: number;data: BodyType<CreateBillRequest>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof update5>>, {id: number;data: BodyType<CreateBillRequest>}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  update4(id,data,requestOptions)
+          return  update5(id,data,requestOptions)
         }
 
         
@@ -173,23 +173,23 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type Update4MutationResult = NonNullable<Awaited<ReturnType<typeof update4>>>
-    export type Update4MutationBody = BodyType<CreateBillRequest>
-    export type Update4MutationError = ErrorType<unknown>
+    export type Update5MutationResult = NonNullable<Awaited<ReturnType<typeof update5>>>
+    export type Update5MutationBody = BodyType<CreateBillRequest>
+    export type Update5MutationError = ErrorType<unknown>
 
     /**
  * @summary Update bill
  */
-export const useUpdate4 = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update4>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useUpdate5 = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update5>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof update4>>,
+        Awaited<ReturnType<typeof update5>>,
         TError,
         {id: number;data: BodyType<CreateBillRequest>},
         TContext
       > => {
 
-      const mutationOptions = getUpdate4MutationOptions(options);
+      const mutationOptions = getUpdate5MutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
