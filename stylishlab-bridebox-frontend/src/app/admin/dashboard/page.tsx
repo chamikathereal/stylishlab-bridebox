@@ -12,10 +12,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { keepPreviousData } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import React, { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const CHART_COLORS = [
   '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', 
@@ -37,11 +39,25 @@ export default function AdminDashboard() {
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
 
   // Data fetching
-  const { data: dailyRes, isLoading: dailyLoading } = useDaily({ date: selectedDate });
-  const { data: weeklyRes, isLoading: weeklyLoading } = useWeekly({ date: selectedDate });
-  const { data: monthlyRes, isLoading: monthlyLoading } = useMonthly({ yearMonth: selectedMonth });
-  const { data: yearlyRes, isLoading: yearlyLoading } = useYearly({ year: selectedYear });
-  const { data: totalRes, isLoading: totalLoading } = useTotal();
+  const { data: dailyRes, isLoading: dailyLoading, isFetching: dailyFetching } = useDaily(
+    { date: selectedDate },
+    { query: { placeholderData: keepPreviousData } }
+  );
+  const { data: weeklyRes, isLoading: weeklyLoading, isFetching: weeklyFetching } = useWeekly(
+    { date: selectedDate },
+    { query: { placeholderData: keepPreviousData } }
+  );
+  const { data: monthlyRes, isLoading: monthlyLoading, isFetching: monthlyFetching } = useMonthly(
+    { yearMonth: selectedMonth },
+    { query: { placeholderData: keepPreviousData } }
+  );
+  const { data: yearlyRes, isLoading: yearlyLoading, isFetching: yearlyFetching } = useYearly(
+    { year: selectedYear },
+    { query: { placeholderData: keepPreviousData } }
+  );
+  const { data: totalRes, isLoading: totalLoading, isFetching: totalFetching } = useTotal(
+    { query: { placeholderData: keepPreviousData } }
+  );
   const { data: salesRes, isLoading: salesLoading } = useGetAll1();
 
   const report = useMemo(() => {
@@ -56,6 +72,7 @@ export default function AdminDashboard() {
   }, [period, totalRes, dailyRes, weeklyRes, monthlyRes, yearlyRes]);
 
   const isLoading = dailyLoading || weeklyLoading || monthlyLoading || yearlyLoading || totalLoading;
+  const isFetching = dailyFetching || weeklyFetching || monthlyFetching || yearlyFetching || totalFetching;
   const sales = salesRes?.data ?? [];
   const recentSales = sales.slice(0, 8);
 
@@ -79,7 +96,7 @@ export default function AdminDashboard() {
   if (isLoading && !report) return <LoadingSpinner message="Loading statistics..." />;
 
   return (
-    <div>
+    <div className={cn("transition-opacity duration-300", isFetching && "opacity-60")}>
       <PageHeader title="Overview" description={`Reviewing ${period === 'daily' ? 'performance for ' + selectedDate : period + ' statistics'}`}>
         <div className="flex flex-wrap gap-2">
           <Link href="/admin/sales">

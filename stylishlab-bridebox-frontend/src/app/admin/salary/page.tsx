@@ -536,10 +536,11 @@ export default function AdminSalaryPage() {
                 </div>
               </div>
               <div>
-                <Label>Settlement Note (Optional)</Label>
+                <Label className="mb-2">Settlement Note (Optional)</Label>
                 <Input
                   placeholder="e.g. Cleared via Bank Transfer"
                   value={settleNote}
+                  className="h-10"
                   onChange={(e) => setSettleNote(e.target.value)}
                 />
               </div>

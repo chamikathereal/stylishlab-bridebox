@@ -11,6 +11,7 @@ import {
   useToggleStatus2,
   useUpdateCommission,
   useUpdate3,
+  useResetPassword,
 } from "@/api/generated/endpoints/employee-management/employee-management";
 import {
   useEmployeeEarnings,
@@ -64,6 +65,9 @@ import {
   Zap,
   Calendar,
   RotateCcw,
+  EyeOff,
+  Eye,
+  Key,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -78,6 +82,7 @@ export default function EmployeesPage() {
   const toggleMutation = useToggleStatus2();
   const updateDetailsMutation = useUpdate3();
   const updateCommissionMutation = useUpdateCommission();
+  const resetPasswordMutation = useResetPassword();
   const queryClient = useQueryClient();
   const employees = (res?.data ?? []) as EmployeeResponse[];
 
@@ -102,6 +107,7 @@ export default function EmployeesPage() {
 
   const [perfEmployeeId, setPerfEmployeeId] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [view, setView] = useState<"grid" | "list">("list");
 
   // KPI States
@@ -109,6 +115,9 @@ export default function EmployeesPage() {
   const [kpiPeriod, setKpiPeriod] = useState<
     "daily" | "weekly" | "monthly" | "yearly" | "total"
   >("monthly");
+  const [resetPassEmployee, setResetPassEmployee] =
+    useState<EmployeeResponse | null>(null);
+  const [newPassword, setNewPassword] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(today);
@@ -314,6 +323,33 @@ export default function EmployeesPage() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!resetPassEmployee?.id || !newPassword) return;
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    resetPasswordMutation.mutate(
+      {
+        id: resetPassEmployee.id,
+        data: { newPassword },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Password reset successfully!");
+          setResetPassEmployee(null);
+          setNewPassword("");
+        },
+        onError: (error: any) => {
+          const msg =
+            error.response?.data?.message || "Failed to reset password";
+          toast.error(msg);
+        },
+      },
+    );
+  };
+
   function formatCurrency(val?: number) {
     return `Rs. ${(val ?? 0).toLocaleString()}`;
   }
@@ -484,39 +520,59 @@ export default function EmployeesPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Full Name *</Label>
+              <Label className="text-xs mb-2">Full Name *</Label>
               <Input
                 value={form.fullName}
+                className="h-10"
                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
               />
             </div>
             <div>
-              <Label>Mobile</Label>
+              <Label className="text-xs mb-2">Mobile</Label>
               <Input
                 value={form.mobile}
+                className="h-10"
                 onChange={(e) => setForm({ ...form, mobile: e.target.value })}
               />
             </div>
             <div>
-              <Label>Username *</Label>
+              <Label className="text-xs mb-2">Username *</Label>
               <Input
                 value={form.username}
+                className="h-10"
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
               />
             </div>
             <div>
-              <Label>Password *</Label>
-              <Input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-              />
+              <Label className="text-xs mb-2">Password *</Label>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  className="h-10"
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Employee %</Label>
+                <Label className="text-xs mb-2">Employee %</Label>
                 <Input
                   type="number"
+                  className="h-10"
                   value={form.employeePercent}
                   onChange={(e) =>
                     setForm({ ...form, employeePercent: e.target.value })
@@ -524,9 +580,10 @@ export default function EmployeesPage() {
                 />
               </div>
               <div>
-                <Label>Owner %</Label>
+                <Label className="text-xs mb-2">Owner %</Label>
                 <Input
                   type="number"
+                  className="h-10"
                   value={form.ownerPercent}
                   onChange={(e) =>
                     setForm({ ...form, ownerPercent: e.target.value })
@@ -625,6 +682,17 @@ export default function EmployeesPage() {
                       }}
                     >
                       <Percent className="w-3 h-3 mr-1" /> Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="flex-1 text-xs bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 border-amber-500/20"
+                      onClick={() => {
+                        setResetPassEmployee(emp);
+                        setNewPassword("");
+                      }}
+                    >
+                      <Key className="w-3 h-3 mr-1" /> Reset
                     </Button>
                   </div>
                   <Button
@@ -756,6 +824,18 @@ export default function EmployeesPage() {
                         ) : (
                           <UserCheck className="w-3.5 h-3.5" />
                         )}
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10"
+                        onClick={() => {
+                          setResetPassEmployee(emp);
+                          setNewPassword("");
+                        }}
+                        title="Reset Password"
+                      >
+                        <Key className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </TableCell>
@@ -898,6 +978,76 @@ export default function EmployeesPage() {
           <DialogFooter>
             <Button variant="secondary" onClick={() => setPerfEmployeeId(null)}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog
+        open={!!resetPassEmployee}
+        onOpenChange={(o) => {
+          if (!o) setResetPassEmployee(null);
+        }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="w-5 h-5 text-amber-600" />
+              Reset Password
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-3">
+            <div className="flex flex-col gap-1.5 px-3 py-2 bg-amber-500/5 border border-amber-500/10 rounded-lg mb-2">
+              <span className="text-[10px] uppercase font-bold text-amber-600">
+                Target Account
+              </span>
+              <span className="font-semibold text-sm">
+                {resetPassEmployee?.fullName} (@{resetPassEmployee?.username})
+              </span>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-pass" className="text-xs">
+                New Secure Password
+              </Label>
+              <div className="relative">
+                <Input
+                  id="new-pass"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Minimum 6 characters"
+                  className="h-10 pr-10"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setResetPassEmployee(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleResetPassword}
+              disabled={resetPasswordMutation.isPending || !newPassword}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {resetPasswordMutation.isPending
+                ? "Resetting..."
+                : "Reset Password"}
             </Button>
           </DialogFooter>
         </DialogContent>

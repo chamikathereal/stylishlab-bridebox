@@ -66,4 +66,11 @@ public class EmployeeController {
     public ResponseEntity<ApiResponse<List<CommissionResponse>>> getCommissions(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(employeeService.getCommissionHistory(id)));
     }
+
+    @PatchMapping("/{id}/reset-password")
+    @Operation(summary = "Reset employee password", description = "Forcibly resets an employee's password. Old password is no longer valid.")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@PathVariable Long id, @Valid @RequestBody ResetPasswordRequest request) {
+        employeeService.resetPassword(id, request);
+        return ResponseEntity.ok(ApiResponse.ok("Password reset successfully", null));
+    }
 }

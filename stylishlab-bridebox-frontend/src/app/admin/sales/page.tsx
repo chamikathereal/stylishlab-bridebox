@@ -72,6 +72,7 @@ import {
   CreditCard,
   History,
   Calendar,
+  Receipt,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -162,16 +163,36 @@ export default function SalesPage() {
   const selectedYear = parseInt(selectedDate.substring(0, 4));
 
   // Analytics Hooks
-  const { data: dailyData } = useDaily({ date: selectedDate }, { query: { enabled: kpiPeriod === "daily" } });
-  const { data: weeklyData } = useWeekly({ date: selectedDate }, { query: { enabled: kpiPeriod === "weekly" } });
-  const { data: monthlyData } = useMonthly({ yearMonth: selectedMonth }, { query: { enabled: kpiPeriod === "monthly" } });
-  const { data: yearlyData } = useYearly({ year: selectedYear }, { query: { enabled: kpiPeriod === "yearly" } });
-  const { data: totalData } = useTotal({ query: { enabled: kpiPeriod === "total" } });
+  const { data: dailyData } = useDaily(
+    { date: selectedDate },
+    { query: { enabled: kpiPeriod === "daily" } },
+  );
+  const { data: weeklyData } = useWeekly(
+    { date: selectedDate },
+    { query: { enabled: kpiPeriod === "weekly" } },
+  );
+  const { data: monthlyData } = useMonthly(
+    { yearMonth: selectedMonth },
+    { query: { enabled: kpiPeriod === "monthly" } },
+  );
+  const { data: yearlyData } = useYearly(
+    { year: selectedYear },
+    { query: { enabled: kpiPeriod === "yearly" } },
+  );
+  const { data: totalData } = useTotal({
+    query: { enabled: kpiPeriod === "total" },
+  });
 
-  const kpis = (kpiPeriod === "daily" ? dailyData?.data : 
-               kpiPeriod === "weekly" ? weeklyData?.data : 
-               kpiPeriod === "monthly" ? monthlyData?.data : 
-               kpiPeriod === "yearly" ? yearlyData?.data : totalData?.data) ?? {};
+  const kpis =
+    (kpiPeriod === "daily"
+      ? dailyData?.data
+      : kpiPeriod === "weekly"
+        ? weeklyData?.data
+        : kpiPeriod === "monthly"
+          ? monthlyData?.data
+          : kpiPeriod === "yearly"
+            ? yearlyData?.data
+            : totalData?.data) ?? {};
 
   // Dialogs state for single sale details/printing
   const [selectedSale, setSelectedSale] = useState<SaleResponse | null>(null);
@@ -186,7 +207,11 @@ export default function SalesPage() {
   });
 
   const filtered = [...sales]
-    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt || 0).getTime() -
+        new Date(a.createdAt || 0).getTime(),
+    )
     .filter(
       (s) =>
         s.customerName?.toLowerCase().includes(filter.toLowerCase()) ||
@@ -281,7 +306,7 @@ export default function SalesPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Customer *</Label>
+              <Label className="text-sm mb-2">Customer *</Label>
               <select
                 className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                 value={form.customerId}
@@ -298,7 +323,7 @@ export default function SalesPage() {
               </select>
             </div>
             <div>
-              <Label>Employee *</Label>
+              <Label className="text-sm mb-2">Employee *</Label>
               <select
                 className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                 value={form.employeeId}
@@ -317,7 +342,7 @@ export default function SalesPage() {
               </select>
             </div>
             <div>
-              <Label>Service *</Label>
+              <Label className="text-sm mb-2">Service *</Label>
               <select
                 className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                 value={form.serviceId}
@@ -334,7 +359,7 @@ export default function SalesPage() {
               </select>
             </div>
             <div>
-              <Label>Payment Status</Label>
+              <Label className="text-sm mb-2">Payment Status</Label>
               <select
                 className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                 value={form.paymentStatus}
@@ -353,7 +378,7 @@ export default function SalesPage() {
             </div>
             {form.paymentStatus === "PARTIAL" && (
               <div>
-                <Label>Paid Amount</Label>
+                <Label className="text-sm mb-2">Paid Amount</Label>
                 <Input
                   type="number"
                   value={form.paidAmount}
@@ -442,7 +467,8 @@ export default function SalesPage() {
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>
-            Total Transactions: <span className="font-bold text-foreground">{filtered.length}</span>
+            Total Transactions:{" "}
+            <span className="font-bold text-foreground">{filtered.length}</span>
           </span>
         </div>
       </div>
@@ -716,7 +742,8 @@ export default function SalesPage() {
                 <div className="grid grid-cols-2 gap-y-2 text-sm">
                   <div className="text-muted-foreground">Total:</div>
                   <div className="font-medium text-right">
-                    Rs. {(selectedSale.servicePriceSnapshot ?? 0).toLocaleString()}
+                    Rs.{" "}
+                    {(selectedSale.servicePriceSnapshot ?? 0).toLocaleString()}
                   </div>
 
                   <div className="text-muted-foreground">Paid:</div>
@@ -746,6 +773,14 @@ export default function SalesPage() {
                   </Badge>
                 </div>
               </div>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  onClick={() => setPrintReceiptOpen(true)}
+                  className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 gap-2 font-semibold rounded-sm"
+                >
+                  <Receipt className="w-4 h-4" /> Print Receipt
+                </Button>
+              </DialogFooter>
             </div>
           )}
         </DialogContent>

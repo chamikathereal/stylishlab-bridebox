@@ -31,6 +31,7 @@ import type {
   ApiResponseListEmployeeResponse,
   ApiResponseVoid,
   CreateEmployeeRequest,
+  ResetPasswordRequest,
   UpdateCommissionRequest,
   UpdateEmployeeRequest
 } from '../../model';
@@ -477,6 +478,71 @@ export const useToggleStatus2 = <TError = ErrorType<unknown>,
       > => {
 
       const mutationOptions = getToggleStatus2MutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Forcibly resets an employee's password. Old password is no longer valid.
+ * @summary Reset employee password
+ */
+export const resetPassword = (
+    id: number,
+    resetPasswordRequest: BodyType<ResetPasswordRequest>,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<ApiResponseVoid>(
+      {url: `/api/employees/${id}/reset-password`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: resetPasswordRequest
+    },
+      options);
+    }
+  
+
+
+export const getResetPasswordMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError,{id: number;data: BodyType<ResetPasswordRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError,{id: number;data: BodyType<ResetPasswordRequest>}, TContext> => {
+
+const mutationKey = ['resetPassword'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetPassword>>, {id: number;data: BodyType<ResetPasswordRequest>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  resetPassword(id,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResetPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof resetPassword>>>
+    export type ResetPasswordMutationBody = BodyType<ResetPasswordRequest>
+    export type ResetPasswordMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Reset employee password
+ */
+export const useResetPassword = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError,{id: number;data: BodyType<ResetPasswordRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof resetPassword>>,
+        TError,
+        {id: number;data: BodyType<ResetPasswordRequest>},
+        TContext
+      > => {
+
+      const mutationOptions = getResetPasswordMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -12,4 +12,5 @@ public interface EmployeeService {
     void toggleStatus(Long id);
     CommissionResponse updateCommission(Long id, UpdateCommissionRequest request);
     List<CommissionResponse> getCommissionHistory(Long employeeId);
+    void resetPassword(Long id, ResetPasswordRequest request);
 }

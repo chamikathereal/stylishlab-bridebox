@@ -148,6 +148,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional
+    public void resetPassword(Long id, ResetPasswordRequest request) {
+        employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", id));
+
+        User user = userRepository.findByEmployeeId(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User account for employee", "id", id));
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        userRepository.save(user);
+    }
+
+    @Override
     public List<CommissionResponse> getCommissionHistory(Long employeeId) {
         return commissionRepository.findByEmployeeIdOrderByEffectiveFromDesc(employeeId).stream()
                 .map(this::toCommissionResponse)
