@@ -154,8 +154,9 @@ public class ReportService {
         BigDecimal employeeCommissions = saleRepository.sumEmployeeAmountBetween(from, to);
         BigDecimal ownerRevenue = saleRepository.sumOwnerAmountBetween(from, to);
         BigDecimal totalExpenses = expenseRepository.sumExpensesBetween(expFrom, expTo);
+        BigDecimal totalBills = billRepository.sumBillsPaidBetween(expFrom, expTo);
 
-        BigDecimal netProfit = ownerRevenue.subtract(totalExpenses);
+        BigDecimal netProfit = ownerRevenue.subtract(totalExpenses).subtract(totalBills);
 
         return PeriodReportResponse.builder()
                 .period(period)
@@ -164,7 +165,7 @@ public class ReportService {
                 .creditSales(creditSales)
                 .employeeCommissions(employeeCommissions)
                 .totalExpenses(totalExpenses)
-                .totalBills(BigDecimal.ZERO)
+                .totalBills(totalBills)
                 .ownerRevenue(ownerRevenue)
                 .netProfit(netProfit)
                 .totalTransactions(saleRepository.countByCreatedAtBetween(from, to))

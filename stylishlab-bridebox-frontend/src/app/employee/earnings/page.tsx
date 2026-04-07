@@ -6,7 +6,14 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { ReceiptPDF } from "@/components/shared/ReceiptPDF";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { StatCard } from "@/components/shared/StatCard";
-import { useGetByEmployee } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
+import { 
+  useGetByEmployee,
+  getGetByEmployeeQueryKey,
+} from "@/api/generated/endpoints/sales-transactions/sales-transactions";
+import { 
+  useRecordPayment,
+  getGetPendingQueryKey,
+} from "@/api/generated/endpoints/credit-management/credit-management";
 import {
   DollarSign,
   TrendingUp,
@@ -22,12 +29,18 @@ import {
   Printer,
   X,
   Search,
+  ArrowRight,
+  Filter,
+  Check,
+  ChevronDown,
 } from "lucide-react";
 import { SaleResponse } from "@/api/generated/model";
 import { useAuth } from "@/lib/auth-context";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +49,14 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -46,6 +67,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   startOfDay,
   endOfDay,
@@ -116,11 +138,55 @@ export default function EarningsPage() {
   >("ALL");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   // Dialog states
   const [selectedSale, setSelectedSale] = useState<SaleResponse | null>(null);
   const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
   const [printReceiptOpen, setPrintReceiptOpen] = useState(false);
+  const [settleOpen, setSettleOpen] = useState(false);
+  const [settleAmount, setSettleAmount] = useState("");
+  const [settleNote, setSettleNote] = useState("");
+
+  const queryClient = useQueryClient();
+  const payMutation = useRecordPayment();
+
+  const handleSettle = () => {
+    if (!selectedSale || !settleAmount) return;
+    const amount = parseFloat(settleAmount);
+
+    if (isNaN(amount) || amount <= 0)
+      return toast.error("Please enter a valid amount");
+    if (amount > (selectedSale.dueAmount ?? 0))
+      return toast.error("Amount exceeds balance");
+
+    payMutation.mutate(
+      {
+        saleId: selectedSale.id!,
+        data: { amountPaid: amount, note: settleNote || undefined },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Payment recorded successfully!");
+          
+          // Use specific query keys to ensure 100% accurate refresh
+          queryClient.invalidateQueries({ 
+            queryKey: getGetByEmployeeQueryKey(employeeId!) 
+          });
+          queryClient.invalidateQueries({ 
+            queryKey: getGetPendingQueryKey() 
+          });
+          // Also invalidate reports just in case stats need updating
+          queryClient.invalidateQueries({ queryKey: ["/api/reports"] });
+          
+          setSettleOpen(false);
+          setSettleAmount("");
+          setSettleNote("");
+        },
+        onError: () => toast.error("Failed to record payment"),
+      },
+    );
+  };
 
   const filteredSales = useMemo(() => {
     const sales = (res?.data ?? []) as SaleResponse[];
@@ -156,15 +222,28 @@ export default function EarningsPage() {
       });
     }
 
+    if (statusFilter !== "ALL") {
+      timeFiltered = timeFiltered.filter((s) => {
+        if (statusFilter === "CREDIT_ONLY") {
+          return (
+            (s.paymentStatus === "CREDIT" || s.paymentStatus === "PARTIAL") &&
+            (s.dueAmount ?? 0) > 0
+          );
+        }
+        return s.paymentStatus === statusFilter;
+      });
+    }
+
     if (!searchTerm) return timeFiltered;
 
     const query = searchTerm.toLowerCase();
     return timeFiltered.filter(
       (s) =>
         s.customerName?.toLowerCase().includes(query) ||
-        s.invoiceNo?.toLowerCase().includes(query),
+        s.invoiceNo?.toLowerCase().includes(query) ||
+        s.serviceNameSnapshot?.toLowerCase().includes(query),
     );
-  }, [res?.data, period, selectedDate, searchTerm]);
+  }, [res?.data, period, selectedDate, searchTerm, statusFilter]);
 
   const stats = useMemo(() => {
     const totalEarnings = filteredSales.reduce(
@@ -331,25 +410,99 @@ export default function EarningsPage() {
         />
       </div>
 
-      <div className="relative w-full sm:max-w-md group">
-        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-primary text-muted-foreground">
-          <Search className="h-4 w-4" />
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="relative flex-1 group">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-primary text-muted-foreground">
+            <Search className="h-4 w-4" />
+          </div>
+          <Input
+            type="text"
+            placeholder="Search by customer name or invoice..."
+            className="pl-10 h-11 bg-background border-muted/20 rounded-xl shadow-sm focus:ring-primary/20 focus:border-primary transition-all text-sm w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
-        <Input
-          type="text"
-          placeholder="Search by customer name or invoice..."
-          className="pl-10 h-11 bg-background border-muted/20 rounded-xl shadow-sm focus:ring-primary/20 focus:border-primary transition-all text-sm"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        {searchTerm && (
-          <button
-            onClick={() => setSearchTerm("")}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant={statusFilter !== "ALL" ? "secondary" : "outline"}
+              className={cn(
+                "h-11 rounded-xl px-4 gap-2 transition-all shrink-0 min-w-[140px] justify-between",
+                statusFilter !== "ALL"
+                  ? "bg-primary/10 text-primary border-primary/20"
+                  : "border-muted/20 hover:border-primary/30",
+                statusFilter === "CREDIT_ONLY" &&
+                  "bg-amber-500/10 text-amber-600 border-amber-500/20",
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <Filter
+                  className={cn(
+                    "w-3.5 h-3.5",
+                    statusFilter !== "ALL"
+                      ? "text-primary"
+                      : "text-muted-foreground",
+                    statusFilter === "CREDIT_ONLY" && "text-amber-500",
+                  )}
+                />
+                <span className="text-[13px] font-semibold">
+                  {statusFilter === "ALL" && "All Statuses"}
+                  {statusFilter === "FULLY_PAID" && "Fully Paid"}
+                  {statusFilter === "PARTIAL" && "Partially Paid"}
+                  {statusFilter === "CREDIT" && "Credit Sales"}
+                  {statusFilter === "CREDIT_ONLY" && "Pending Credits"}
+                </span>
+              </div>
+              <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-56 glass-card border-white/10 p-1"
           >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+            <DropdownMenuLabel className="text-[10px] uppercase font-bold text-muted-foreground px-2 py-1.5 tracking-widest">
+              Payment Status
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-white/5" />
+            {[
+              { id: "ALL", label: "All Statuses" },
+              { id: "FULLY_PAID", label: "Fully Paid" },
+              { id: "PARTIAL", label: "Partially Paid" },
+              { id: "CREDIT", label: "Credit Sales" },
+              { id: "CREDIT_ONLY", label: "Any Outstanding", icon: true },
+            ].map((f) => (
+              <DropdownMenuItem
+                key={f.id}
+                className={cn(
+                  "flex items-center justify-between rounded-lg px-2 py-2 cursor-pointer transition-colors text-sm",
+                  statusFilter === f.id
+                    ? "bg-primary/10 text-primary font-bold"
+                    : "hover:bg-white/5",
+                )}
+                onClick={() => setStatusFilter(f.id)}
+              >
+                <div className="flex items-center gap-2">
+                  <span>{f.label}</span>
+                  {f.icon && (
+                    <Badge className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/20 text-[8px] h-4 py-0 leading-none border-amber-500/10">
+                      Credits
+                    </Badge>
+                  )}
+                </div>
+                {statusFilter === f.id && <Check className="w-4 h-4" />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="w-full sm:w-px h-px sm:h-8 bg-muted/50 hidden sm:block" />
@@ -420,17 +573,32 @@ export default function EarningsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right pr-6">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
-                          onClick={() => {
-                            setSelectedSale(s);
-                            setViewDetailsOpen(true);
-                          }}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          {(s.dueAmount ?? 0) > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-lg hover:bg-amber-500/10 text-amber-500 transition-colors"
+                              onClick={() => {
+                                setSelectedSale(s);
+                                setSettleOpen(true);
+                              }}
+                            >
+                              <DollarSign className="w-4 h-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+                            onClick={() => {
+                              setSelectedSale(s);
+                              setViewDetailsOpen(true);
+                            }}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -464,17 +632,32 @@ export default function EarningsPage() {
                       <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">
                         +{formatCurrency(s.employeeAmount)}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-[10px] gap-1 rounded-md hover:bg-primary/10"
-                        onClick={() => {
-                          setSelectedSale(s);
-                          setViewDetailsOpen(true);
-                        }}
-                      >
-                        <Eye className="w-3 h-3" /> Details
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        {(s.dueAmount ?? 0) > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-[10px] gap-1 rounded-md hover:bg-amber-500/10 text-amber-600"
+                            onClick={() => {
+                              setSelectedSale(s);
+                              setSettleOpen(true);
+                            }}
+                          >
+                            <DollarSign className="w-3 h-3" /> Settle
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-[10px] gap-1 rounded-md hover:bg-primary/10"
+                          onClick={() => {
+                            setSelectedSale(s);
+                            setViewDetailsOpen(true);
+                          }}
+                        >
+                          <Eye className="w-3 h-3" /> Details
+                        </Button>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center justify-between bg-muted/30 p-2 rounded-lg">
@@ -687,6 +870,108 @@ export default function EarningsPage() {
                 <ReceiptPDF sale={selectedSale} />
               </PDFViewer>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Settle Payment Dialog */}
+      <Dialog open={settleOpen} onOpenChange={setSettleOpen}>
+        <DialogContent className="sm:max-w-md overflow-hidden p-0 border-none rounded-2xl shadow-2xl">
+          <div className="bg-amber-500/5 p-6 border-b border-amber-500/10">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-xl">
+                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-amber-500" />
+                </div>
+                Settle Credit Payment
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-muted/40 border border-muted/20">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">
+                  Customer
+                </p>
+                <p className="font-bold text-lg leading-tight truncate">
+                  {selectedSale?.customerName}
+                </p>
+                <p className="text-xs text-muted-foreground/60 font-mono">
+                  INV-#{selectedSale?.invoiceNo}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">
+                  Balance
+                </p>
+                <p className="font-bold text-xl text-amber-600 tabular-nums">
+                  {formatCurrency(selectedSale?.dueAmount)}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2.5">
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm font-bold text-foreground/80 uppercase">
+                    Payment Amount
+                  </Label>
+                  <button
+                    className="text-[10px] text-primary hover:underline font-bold"
+                    onClick={() =>
+                      setSettleAmount(selectedSale?.dueAmount?.toString() || "")
+                    }
+                  >
+                    Pay Full Balance
+                  </button>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-muted-foreground">
+                    Rs.
+                  </span>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    className="pl-12 h-14 text-2xl font-black bg-muted/20 border-muted/20 focus:border-amber-500/50 transition-all rounded-xl"
+                    value={settleAmount}
+                    onChange={(e) => setSettleAmount(e.target.value)}
+                    max={selectedSale?.dueAmount}
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <Label className="text-sm font-bold text-foreground/80 uppercase">
+                  Internal Note
+                </Label>
+                <Input
+                  placeholder="e.g. Paid cash in hand"
+                  className="bg-muted/20 border-muted/20 h-11 rounded-lg"
+                  value={settleNote}
+                  onChange={(e) => setSettleNote(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 pt-2 bg-muted/5 flex flex-col sm:flex-row gap-4">
+            <Button
+              variant="outline"
+              onClick={() => setSettleOpen(false)}
+              className="w-full sm:flex-1 order-2 sm:order-1 font-bold h-16 sm:h-11 rounded-2xl sm:rounded-xl text-base sm:text-[11px] uppercase tracking-widest border-muted-foreground/20"
+            >
+              Cancel
+            </Button>
+            <Button
+              className="w-full sm:flex-1 order-1 sm:order-2 gap-3 bg-amber-500 hover:bg-amber-600 text-white font-black h-16 sm:h-11 rounded-2xl sm:rounded-xl shadow-xl shadow-amber-500/20 text-base sm:text-[11px] uppercase tracking-widest"
+              onClick={handleSettle}
+              disabled={payMutation.isPending || !settleAmount}
+            >
+              {payMutation.isPending ? "Processing..." : "Record Payment"}
+              <ArrowRight className="w-5 h-5 sm:w-4 sm:h-4" />
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

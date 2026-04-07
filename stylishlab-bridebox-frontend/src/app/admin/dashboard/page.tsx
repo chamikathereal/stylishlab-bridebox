@@ -162,7 +162,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard title={`${period === 'all' ? 'Total' : period.charAt(0).toUpperCase() + period.slice(1)} Sales`} value={formatCurrency(report?.totalSales)} subtitle={`${report?.totalTransactions ?? 0} transactions`} icon={DollarSign} variant="primary" />
-        <StatCard title="Cash Received" value={formatCurrency(report?.cashReceived)} icon={Wallet} variant="success" />
+        <StatCard title="Owner's Share" value={formatCurrency(report?.ownerRevenue)} icon={Wallet} variant="success" />
         <StatCard title="Credit Sales" value={formatCurrency(report?.creditSales)} icon={CreditCard} variant="warning" />
         <StatCard title="Net Profit" value={formatCurrency(report?.netProfit)} icon={TrendingUp} variant={report?.netProfit && report.netProfit > 0 ? 'primary' : 'danger'} />
       </div>
