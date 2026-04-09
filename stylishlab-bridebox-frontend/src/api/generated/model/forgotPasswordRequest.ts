@@ -6,12 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface ResetPasswordRequest {
+export interface ForgotPasswordRequest {
   /** @minLength 1 */
-  token: string;
-  /**
-   * @minLength 6
-   * @maxLength 2147483647
-   */
-  newPassword: string;
+  email: string;
 }

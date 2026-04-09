@@ -67,6 +67,7 @@ export * from './employeeEarningsResponse';
 export * from './employeeResponse';
 export * from './expenseCategoryResponse';
 export * from './expenseResponse';
+export * from './forgotPasswordRequest';
 export * from './getByDateRange1Params';
 export * from './getByDateRangeParams';
 export * from './getHistoryByDateRangeParams';

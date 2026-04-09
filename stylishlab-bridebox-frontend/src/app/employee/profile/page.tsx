@@ -6,7 +6,9 @@ import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
   useGetProfile,
   useChangePassword,
+  useUpdateProfile,
 } from "@/api/generated/endpoints/profile-management/profile-management";
+import { useForgotPassword } from "@/api/generated/endpoints/authentication/authentication";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +20,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Lock, Shield, LogOut, KeyRound, Wallet, Plus } from "lucide-react";
+import { Lock, Shield, LogOut, KeyRound, Wallet, Plus, Mail, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { EmployeeSalaryModal } from "@/components/employee/EmployeeSalaryModal";
@@ -26,18 +28,49 @@ import { EmployeeExpenseModal } from "@/components/employee/EmployeeExpenseModal
 
 export default function EmployeeProfile() {
   const { logout } = useAuth();
-  const { data: res, isLoading } = useGetProfile();
+  const { data: res, isLoading, refetch } = useGetProfile();
   const changePwdMutation = useChangePassword();
+  const updateProfileMutation = useUpdateProfile();
+  const forgotPwdMutation = useForgotPassword();
   const profile = res?.data;
 
   const [isPwdOpen, setIsPwdOpen] = useState(false);
   const [isSalaryOpen, setIsSalaryOpen] = useState(false);
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [email, setEmail] = useState("");
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
+
+  const handleOpenEdit = () => {
+    setEmail(profile?.email || "");
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateProfile = () => {
+    if (!email.trim() || !email.includes('@')) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    updateProfileMutation.mutate(
+      {
+        data: {
+          email: email,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Profile updated!");
+          refetch();
+          setIsEditOpen(false);
+        },
+        onError: () => toast.error("Failed to update profile"),
+      }
+    );
+  };
 
   const handleChangePwd = () => {
     if (passwords.newPassword !== passwords.confirmPassword) {
@@ -70,6 +103,32 @@ export default function EmployeeProfile() {
     );
   };
 
+  const handleForgotPassword = () => {
+    if (!profile?.email) {
+      toast.error("Please add an email to your profile first");
+      return;
+    }
+
+    forgotPwdMutation.mutate(
+      {
+        data: {
+          email: profile.email,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Reset link sent! Check your email.");
+          setIsPwdOpen(false);
+        },
+        onError: (error: unknown) => {
+          const apiError = error as { response?: { data?: { message?: string } } };
+          const msg = apiError.response?.data?.message || "Failed to send reset email";
+          toast.error(msg);
+        },
+      }
+    );
+  };
+
   if (isLoading) return <LoadingSpinner />;
 
   return (
@@ -82,21 +141,31 @@ export default function EmployeeProfile() {
       {/* User Info Card */}
       <Card className="glass-card shadow-sm border-muted/20">
         <CardContent className="p-6">
-          <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-full bg-primary/10 border-4 border-primary/5 flex items-center justify-center text-primary text-3xl font-extrabold shadow-inner">
-              {profile?.username?.charAt(0).toUpperCase()}
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-xl font-bold tracking-tight">
-                {profile?.fullName ?? profile?.username}
-              </h2>
-              <div className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full w-fit border border-primary/10">
-                <Shield className="w-3.5 h-3.5 text-primary" />
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                  {profile?.role}
-                </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-5">
+              <div className="w-20 h-20 rounded-full bg-primary/10 border-4 border-primary/5 flex items-center justify-center text-primary text-3xl font-extrabold shadow-inner">
+                {profile?.username?.charAt(0).toUpperCase()}
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-xl font-bold tracking-tight">
+                  {profile?.fullName ?? profile?.username}
+                </h2>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full w-fit border border-primary/10">
+                    <Shield className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                      {profile?.role}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground ml-1">
+                    {profile?.email || "No email set"}
+                  </p>
+                </div>
               </div>
             </div>
+            <Button variant="ghost" size="sm" onClick={handleOpenEdit} className="text-primary hover:text-primary hover:bg-primary/5">
+              Edit Profile
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -134,6 +203,7 @@ export default function EmployeeProfile() {
             </p>
           </div>
         </Button>
+
         <Button
           variant="outline"
           onClick={() => setIsExpenseOpen(true)}
@@ -167,6 +237,60 @@ export default function EmployeeProfile() {
         </Button>
       </div>
 
+      {/* Edit Profile Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-[425px] border-muted/20">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserIcon className="w-5 h-5 text-primary" /> Edit Profile
+            </DialogTitle>
+            <DialogDescription>
+              Update your personal information to stay connected.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label
+                htmlFor="email"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                Email Address
+              </Label>
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  className="h-11 pl-10 focus-visible:ring-primary"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">
+                * Required for password recovery
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3 mt-4">
+            <Button
+              variant="ghost"
+              className="flex-1"
+              onClick={() => setIsEditOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
+              onClick={handleUpdateProfile}
+              disabled={updateProfileMutation.isPending}
+            >
+              {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Password Change Dialog */}
       <Dialog open={isPwdOpen} onOpenChange={setIsPwdOpen}>
         <DialogContent className="sm:max-w-[425px] border-muted/20">
@@ -198,6 +322,16 @@ export default function EmployeeProfile() {
                   })
                 }
               />
+              <div className="flex justify-end">
+                <Button
+                  variant="link"
+                  className="px-0 h-auto text-[11px] text-primary hover:text-primary/80 transition-colors"
+                  onClick={handleForgotPassword}
+                  disabled={forgotPwdMutation.isPending}
+                >
+                  {forgotPwdMutation.isPending ? "Sending link..." : "Forgot current password?"}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label

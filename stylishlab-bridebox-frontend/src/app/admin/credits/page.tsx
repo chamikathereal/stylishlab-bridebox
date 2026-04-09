@@ -185,7 +185,7 @@ export default function CreditsPage() {
 
       <Card className="glass-card overflow-hidden">
         <CardContent className="p-0">
-          <div className="p-4 border-b border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between bg-white/[0.02]">
+          <div className="p-4 border-b border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between bg-white/2">
             <div className="relative w-full md:w-96">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -207,7 +207,7 @@ export default function CreditsPage() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-white/[0.02] border-b-white/5 hover:bg-transparent">
+                <TableRow className="bg-white/2 border-b-white/5 hover:bg-transparent">
                   <TableHead className="font-bold px-6 py-4 uppercase text-[11px] tracking-widest text-muted-foreground">
                     Customer & Invoice
                   </TableHead>
@@ -229,7 +229,7 @@ export default function CreditsPage() {
                 {filteredSales.map((sale) => (
                   <TableRow
                     key={sale.id}
-                    className="border-b-white/5 hover:bg-white/[0.03] transition-colors group"
+                    className="border-b-white/5 hover:bg-white/3 transition-colors group"
                   >
                     <TableCell className="px-6 py-4">
                       <div className="flex flex-col gap-0.5">
@@ -262,7 +262,7 @@ export default function CreditsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground font-medium">
-                      {formatCurrency(sale.totalAmount)}
+                      {formatCurrency(sale.servicePriceSnapshot)}
                     </TableCell>
                     <TableCell className="text-right font-bold text-amber-500 tabular-nums">
                       {formatCurrency(sale.dueAmount)}
@@ -329,7 +329,7 @@ export default function CreditsPage() {
           </div>
 
           <div className="p-6 space-y-6">
-            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/5">
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-white/3 border border-white/5">
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">
                   Debtor
@@ -376,7 +376,7 @@ export default function CreditsPage() {
                   <Input
                     type="number"
                     placeholder="0.00"
-                    className="pl-14 h-14 text-2xl font-black bg-white/[0.02] border-white/10 group-focus-within:border-primary/50 transition-all rounded-xl tabular-nums"
+                    className="pl-14 h-14 text-2xl font-black bg-white/2 border-white/10 group-focus-within:border-primary/50 transition-all rounded-xl tabular-nums"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     max={payDialog?.max}
@@ -391,7 +391,7 @@ export default function CreditsPage() {
                 </Label>
                 <Input
                   placeholder="e.g. Paid via Bank Transfer"
-                  className="bg-white/[0.02] border-white/10 h-11 rounded-lg"
+                  className="bg-white/2 border-white/10 h-11 rounded-lg"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                 />
@@ -399,7 +399,7 @@ export default function CreditsPage() {
             </div>
           </div>
 
-          <div className="p-6 pt-2 bg-white/[0.02] flex flex-col sm:flex-row gap-3">
+          <div className="p-6 pt-2 bg-white/2 flex flex-col sm:flex-row gap-3">
             <Button
               variant="outline"
               onClick={() => setPayDialog(null)}

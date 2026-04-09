@@ -6,4 +6,5 @@ import lombok.Data;
 public class UpdateProfileRequest {
     private String fullName;
     private String mobile;
+    private String email;
 }

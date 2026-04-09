@@ -6,11 +6,11 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { ReceiptPDF } from "@/components/shared/ReceiptPDF";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { StatCard } from "@/components/shared/StatCard";
-import { 
+import {
   useGetByEmployee,
   getGetByEmployeeQueryKey,
 } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
-import { 
+import {
   useRecordPayment,
   getGetPendingQueryKey,
 } from "@/api/generated/endpoints/credit-management/credit-management";
@@ -34,7 +34,7 @@ import {
   Check,
   ChevronDown,
 } from "lucide-react";
-import { SaleResponse } from "@/api/generated/model";
+import { SaleResponse, CreateSaleRequestPaymentStatus } from "@/api/generated/model";
 import { useAuth } from "@/lib/auth-context";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -109,22 +109,36 @@ function formatCurrency(val?: number) {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  FULLY_PAID: {
+  [CreateSaleRequestPaymentStatus.FULLY_PAID]: {
     label: "Fully Paid",
     className:
       "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
   },
-  CREDIT: {
+  [CreateSaleRequestPaymentStatus.CREDIT]: {
     label: "Credit",
     className:
       "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400",
   },
-  PARTIAL: {
+  [CreateSaleRequestPaymentStatus.PARTIAL]: {
     label: "Partial",
     className:
       "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
   },
 };
+
+interface StatusOption {
+  id: string;
+  label: string;
+  icon?: boolean;
+}
+
+const STATUS_OPTIONS: readonly StatusOption[] = [
+  { id: "ALL", label: "All Statuses" },
+  { id: CreateSaleRequestPaymentStatus.FULLY_PAID, label: "Fully Paid" },
+  { id: CreateSaleRequestPaymentStatus.PARTIAL, label: "Partially Paid" },
+  { id: CreateSaleRequestPaymentStatus.CREDIT, label: "Credit Sales" },
+  { id: "CREDIT_ONLY", label: "Pending Credits", icon: true },
+] as const;
 
 export default function EarningsPage() {
   const { user } = useAuth();
@@ -168,17 +182,17 @@ export default function EarningsPage() {
       {
         onSuccess: () => {
           toast.success("Payment recorded successfully!");
-          
+
           // Use specific query keys to ensure 100% accurate refresh
-          queryClient.invalidateQueries({ 
-            queryKey: getGetByEmployeeQueryKey(employeeId!) 
+          queryClient.invalidateQueries({
+            queryKey: getGetByEmployeeQueryKey(employeeId!),
           });
-          queryClient.invalidateQueries({ 
-            queryKey: getGetPendingQueryKey() 
+          queryClient.invalidateQueries({
+            queryKey: getGetPendingQueryKey(),
           });
           // Also invalidate reports just in case stats need updating
           queryClient.invalidateQueries({ queryKey: ["/api/reports"] });
-          
+
           setSettleOpen(false);
           setSettleAmount("");
           setSettleNote("");
@@ -432,19 +446,21 @@ export default function EarningsPage() {
           )}
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant={statusFilter !== "ALL" ? "secondary" : "outline"}
-              className={cn(
-                "h-11 rounded-xl px-4 gap-2 transition-all shrink-0 min-w-[140px] justify-between",
-                statusFilter !== "ALL"
-                  ? "bg-primary/10 text-primary border-primary/20"
-                  : "border-muted/20 hover:border-primary/30",
-                statusFilter === "CREDIT_ONLY" &&
-                  "bg-amber-500/10 text-amber-600 border-amber-500/20",
-              )}
-            >
-              <div className="flex items-center gap-2">
+          <DropdownMenuTrigger
+            className={cn(
+              buttonVariants({
+                variant: statusFilter !== "ALL" ? "secondary" : "outline",
+              }),
+              "h-11 rounded-xl px-4 gap-2 transition-all shrink-0 min-w-[140px] justify-between cursor-pointer",
+              statusFilter !== "ALL"
+                ? "bg-primary/10 text-primary border-primary/20"
+                : "border-muted/20 hover:border-primary/30",
+              statusFilter === "CREDIT_ONLY" &&
+                "bg-amber-500/10 text-amber-600 border-amber-500/20",
+            )}
+          >
+            <span className="flex items-center justify-between w-full">
+              <span className="flex items-center gap-2">
                 <Filter
                   className={cn(
                     "w-3.5 h-3.5",
@@ -454,32 +470,19 @@ export default function EarningsPage() {
                     statusFilter === "CREDIT_ONLY" && "text-amber-500",
                   )}
                 />
-                <span className="text-[13px] font-semibold">
-                  {statusFilter === "ALL" && "All Statuses"}
-                  {statusFilter === "FULLY_PAID" && "Fully Paid"}
-                  {statusFilter === "PARTIAL" && "Partially Paid"}
-                  {statusFilter === "CREDIT" && "Credit Sales"}
-                  {statusFilter === "CREDIT_ONLY" && "Pending Credits"}
+                <span className="text-[13px] font-semibold whitespace-nowrap">
+                  {STATUS_OPTIONS.find((opt) => opt.id === statusFilter)?.label}
                 </span>
-              </div>
+              </span>
               <ChevronDown className="w-3.5 h-3.5 opacity-50" />
-            </Button>
+            </span>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-56 glass-card border-white/10 p-1"
-          >
+          <DropdownMenuContent align="end" className="w-56 border-white/10 p-1">
             <DropdownMenuLabel className="text-[10px] uppercase font-bold text-muted-foreground px-2 py-1.5 tracking-widest">
               Payment Status
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-white/5" />
-            {[
-              { id: "ALL", label: "All Statuses" },
-              { id: "FULLY_PAID", label: "Fully Paid" },
-              { id: "PARTIAL", label: "Partially Paid" },
-              { id: "CREDIT", label: "Credit Sales" },
-              { id: "CREDIT_ONLY", label: "Any Outstanding", icon: true },
-            ].map((f) => (
+
+            {STATUS_OPTIONS.map((f) => (
               <DropdownMenuItem
                 key={f.id}
                 className={cn(

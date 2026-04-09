@@ -9,4 +9,5 @@
 export interface UpdateProfileRequest {
   fullName?: string;
   mobile?: string;
+  email?: string;
 }

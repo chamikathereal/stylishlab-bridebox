@@ -40,6 +40,7 @@ public class ProfileService {
         return ProfileResponse.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
+                .email(user.getEmail())
                 .role(user.getRole().name())
                 .employeeId(employee != null ? employee.getId() : null)
                 .fullName(employee != null ? employee.getFullName() : "Admin")
@@ -51,6 +52,9 @@ public class ProfileService {
     public ProfileResponse updateProfile(String username, UpdateProfileRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+        userRepository.save(user);
 
         if (user.getEmployee() != null) {
             Employee employee = user.getEmployee();

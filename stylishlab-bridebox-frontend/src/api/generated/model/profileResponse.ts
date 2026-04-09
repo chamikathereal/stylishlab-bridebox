@@ -9,6 +9,7 @@
 export interface ProfileResponse {
   userId?: number;
   username?: string;
+  email?: string;
   role?: string;
   employeeId?: number;
   fullName?: string;

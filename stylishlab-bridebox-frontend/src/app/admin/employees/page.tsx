@@ -11,7 +11,7 @@ import {
   useToggleStatus2,
   useUpdateCommission,
   useUpdate3,
-  useResetPassword,
+  useResetPassword1,
 } from "@/api/generated/endpoints/employee-management/employee-management";
 import {
   useEmployeeEarnings,
@@ -82,7 +82,7 @@ export default function EmployeesPage() {
   const toggleMutation = useToggleStatus2();
   const updateDetailsMutation = useUpdate3();
   const updateCommissionMutation = useUpdateCommission();
-  const resetPasswordMutation = useResetPassword();
+  const resetPasswordMutation = useResetPassword1();
   const queryClient = useQueryClient();
   const employees = (res?.data ?? []) as EmployeeResponse[];
 
@@ -333,7 +333,10 @@ export default function EmployeesPage() {
     resetPasswordMutation.mutate(
       {
         id: resetPassEmployee.id,
-        data: { newPassword },
+        data: { 
+          newPassword,
+          token: "direct-admin-reset" // Required by ResetPasswordRequest type, provided as dummy for admin forced reset
+        },
       },
       {
         onSuccess: () => {

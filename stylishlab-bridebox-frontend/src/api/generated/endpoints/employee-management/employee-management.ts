@@ -485,7 +485,7 @@ export const useToggleStatus2 = <TError = ErrorType<unknown>,
  * Forcibly resets an employee's password. Old password is no longer valid.
  * @summary Reset employee password
  */
-export const resetPassword = (
+export const resetPassword1 = (
     id: number,
     resetPasswordRequest: BodyType<ResetPasswordRequest>,
  options?: SecondParameter<typeof customInstance>,) => {
@@ -501,11 +501,11 @@ export const resetPassword = (
   
 
 
-export const getResetPasswordMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError,{id: number;data: BodyType<ResetPasswordRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError,{id: number;data: BodyType<ResetPasswordRequest>}, TContext> => {
+export const getResetPassword1MutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetPassword1>>, TError,{id: number;data: BodyType<ResetPasswordRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof resetPassword1>>, TError,{id: number;data: BodyType<ResetPasswordRequest>}, TContext> => {
 
-const mutationKey = ['resetPassword'];
+const mutationKey = ['resetPassword1'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -515,10 +515,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetPassword>>, {id: number;data: BodyType<ResetPasswordRequest>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetPassword1>>, {id: number;data: BodyType<ResetPasswordRequest>}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  resetPassword(id,data,requestOptions)
+          return  resetPassword1(id,data,requestOptions)
         }
 
         
@@ -526,23 +526,23 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ResetPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof resetPassword>>>
-    export type ResetPasswordMutationBody = BodyType<ResetPasswordRequest>
-    export type ResetPasswordMutationError = ErrorType<unknown>
+    export type ResetPassword1MutationResult = NonNullable<Awaited<ReturnType<typeof resetPassword1>>>
+    export type ResetPassword1MutationBody = BodyType<ResetPasswordRequest>
+    export type ResetPassword1MutationError = ErrorType<unknown>
 
     /**
  * @summary Reset employee password
  */
-export const useResetPassword = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetPassword>>, TError,{id: number;data: BodyType<ResetPasswordRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useResetPassword1 = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetPassword1>>, TError,{id: number;data: BodyType<ResetPasswordRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof resetPassword>>,
+        Awaited<ReturnType<typeof resetPassword1>>,
         TError,
         {id: number;data: BodyType<ResetPasswordRequest>},
         TContext
       > => {
 
-      const mutationOptions = getResetPasswordMutationOptions(options);
+      const mutationOptions = getResetPassword1MutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
