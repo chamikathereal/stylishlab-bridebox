@@ -51,6 +51,7 @@
    - 👔 6.1 Administrator Workflows
    - 💇 6.2 Staff Member Workflows
 7. [**🛠️ Part VII: Infrastructure, Setup & Maintenance**](#part-vii-infrastructure-setup--maintenance)
+8. [**🚀 Part VIII: Developer Tools & API Testing**](#part-viii-developer-tools--api-testing)
 
 ---
 
@@ -284,6 +285,35 @@ The UI is built with **"Premium Dark Mode"** as the primary aesthetic.
 
 - **Schema Lifecycle:** Database updates must only be performed via Flyway migrations.
 - **Backups:** Perform a full `mysqldump` of the `bridebox_salon` schema daily.
+
+---
+
+# 🚀 Part VIII: Developer Tools & API Testing
+
+The Stylish Lab Bridebox backend provides built-in tools for rapid development, testing, and API verification.
+
+## 🛠️ 8.1 Swagger UI (Interactive Documentation)
+
+The system uses **SpringDoc OpenAPI** to generate a live, interactive test environment.
+
+- **URL:** `http://localhost:8080/swagger-ui.html`
+- **Authentication:**
+  1. Login via `/api/auth/login` to obtain a JWT.
+  2. Click the **"Authorize"** button at the top of the Swagger page.
+  3. Enter the token in the format: `Bearer YOUR_JWT_TOKEN`.
+  4. All protected endpoints will now be accessible for testing directly in the browser.
+
+## 📮 8.2 Postman Integration
+
+For advanced testing, performance monitoring, and automated collections:
+
+1. **Importing Docs:** In Postman, click **Import** and paste the raw OpenAPI JSON URL: `http://localhost:8080/v3/api-docs`.
+2. **Environment Setup:** Create a variable named `base_url` set to `http://localhost:8080`.
+3. **Automated Auth:**
+   - Go to the Collection's **Authorization** tab.
+   - Select **Type:** Bearer Token.
+   - Use a variable: `{{jwt_token}}`.
+   - Update this variable upon login to authorize all requests in the collection automatically.
 
 ---
 
