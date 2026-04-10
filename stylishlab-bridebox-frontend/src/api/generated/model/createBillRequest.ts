@@ -13,5 +13,6 @@ export interface CreateBillRequest {
   /** @minLength 1 */
   billMonth: string;
   dueDate?: string;
+  paidDate?: string;
   note?: string;
 }

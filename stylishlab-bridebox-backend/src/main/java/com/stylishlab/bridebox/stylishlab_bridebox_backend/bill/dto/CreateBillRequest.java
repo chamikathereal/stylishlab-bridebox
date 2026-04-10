@@ -21,5 +21,6 @@ public class CreateBillRequest {
     private String billMonth;
 
     private LocalDate dueDate;
+    private LocalDate paidDate;
     private String note;
 }

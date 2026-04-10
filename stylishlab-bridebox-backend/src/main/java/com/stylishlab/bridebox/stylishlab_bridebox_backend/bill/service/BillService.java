@@ -24,7 +24,8 @@ public class BillService {
                 .amount(request.getAmount())
                 .billMonth(request.getBillMonth())
                 .dueDate(request.getDueDate())
-                .status(BillStatus.PENDING)
+                .paidDate(request.getPaidDate())
+                .status(request.getPaidDate() != null ? BillStatus.PAID : BillStatus.PENDING)
                 .note(request.getNote())
                 .build();
         return toResponse(repository.save(bill));
@@ -59,6 +60,10 @@ public class BillService {
         bill.setAmount(request.getAmount());
         bill.setBillMonth(request.getBillMonth());
         if (request.getDueDate() != null) bill.setDueDate(request.getDueDate());
+        if (request.getPaidDate() != null) {
+            bill.setPaidDate(request.getPaidDate());
+            bill.setStatus(BillStatus.PAID);
+        }
         if (request.getNote() != null) bill.setNote(request.getNote());
         return toResponse(repository.save(bill));
     }

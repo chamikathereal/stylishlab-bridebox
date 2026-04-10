@@ -65,6 +65,7 @@ export default function BillsPage() {
     billType: "",
     amount: "",
     billMonth: "",
+    paidDate: "",
     note: "",
   });
 
@@ -136,6 +137,7 @@ export default function BillsPage() {
           billType: form.billType,
           amount: parseFloat(form.amount),
           billMonth: form.billMonth,
+          paidDate: form.paidDate || undefined,
           note: form.note || undefined,
         },
       },
@@ -144,7 +146,13 @@ export default function BillsPage() {
           toast.success("Bill created!");
           queryClient.invalidateQueries();
           setOpen(false);
-          setForm({ billType: "", amount: "", billMonth: "", note: "" });
+          setForm({
+            billType: "",
+            amount: "",
+            billMonth: "",
+            paidDate: "",
+            note: "",
+          });
         },
         onError: () => toast.error("Failed to create bill"),
       },
@@ -307,6 +315,20 @@ export default function BillsPage() {
                   setForm({ ...form, billMonth: e.target.value })
                 }
               />
+              <p className="text-[10px] text-muted-foreground mt-1 italic">
+                The period this bill belongs to (e.g. May Rent)
+              </p>
+            </div>
+            <div>
+              <Label className="mb-2">Payment Date (Optional)</Label>
+              <Input
+                type="date"
+                value={form.paidDate}
+                onChange={(e) => setForm({ ...form, paidDate: e.target.value })}
+              />
+              <p className="text-[10px] text-emerald-600/70 mt-1 italic">
+                Select a date if the bill is already paid today or earlier
+              </p>
             </div>
             <div>
               <Label className="mb-2">Note</Label>
@@ -344,8 +366,8 @@ export default function BillsPage() {
                 <TableHead className="px-8 py-4 font-bold text-xs uppercase tracking-wider">
                   Type
                 </TableHead>
-                <TableHead className="px-8 py-4 font-bold text-xs uppercase tracking-wider">
-                  Month
+                <TableHead className="px-8 py-4 font-bold text-xs uppercase tracking-wider text-blue-600">
+                  Bill Period
                 </TableHead>
                 <TableHead className="px-8 py-4 text-right font-bold text-xs uppercase tracking-wider text-emerald-600">
                   Amount
@@ -354,9 +376,9 @@ export default function BillsPage() {
                   Status
                 </TableHead>
                 <TableHead className="px-8 py-4 font-bold text-xs uppercase tracking-wider text-teal-600">
-                  Paid Date
+                  Transaction Date
                 </TableHead>
-                <TableHead className="px-8 py-4 font-bold text-xs uppercase tracking-wider text-blue-600">
+                <TableHead className="px-8 py-4 font-bold text-xs uppercase tracking-wider">
                   Note
                 </TableHead>
                 <TableHead className="px-8 py-4 text-right font-bold text-xs uppercase tracking-wider">
@@ -375,12 +397,13 @@ export default function BillsPage() {
                       {b.billType}
                     </TableCell>
                     <TableCell className="px-8 py-5">
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] font-bold bg-muted/20 border-muted-foreground/10"
-                      >
-                        {b.billMonth}
-                      </Badge>
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-1.5 text-blue-600 font-bold text-sm">
+                          <Calendar className="w-3 h-3" />
+                          {b.billMonth}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground uppercase font-medium">Billing Cycle</span>
+                      </div>
                     </TableCell>
                     <TableCell className="px-8 py-5 text-right font-black text-sm text-emerald-600">
                       {formatCurrency(b.amount)}
@@ -398,8 +421,18 @@ export default function BillsPage() {
                         {b.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="px-8 py-5 text-[11px] font-bold text-muted-foreground uppercase">
-                      {b.paidDate ?? "-"}
+                    <TableCell className="px-8 py-5">
+                      {b.paidDate ? (
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1.5 text-teal-600 font-bold text-[11px]">
+                            <CheckCircle className="w-3 h-3" />
+                            {b.paidDate}
+                          </div>
+                          <span className="text-[9px] text-muted-foreground uppercase font-medium">Payment Recorded</span>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] font-bold text-muted-foreground/30 uppercase tracking-tighter italic">Not Settled Yet</span>
+                      )}
                     </TableCell>
                     <TableCell className="px-8 py-5 text-[11px] font-medium text-muted-foreground italic">
                       {b.note || "-"}
