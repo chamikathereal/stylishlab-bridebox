@@ -34,7 +34,10 @@ import {
   Check,
   ChevronDown,
 } from "lucide-react";
-import { SaleResponse, CreateSaleRequestPaymentStatus } from "@/api/generated/model";
+import {
+  SaleResponse,
+  CreateSaleRequestPaymentStatus,
+} from "@/api/generated/model";
 import { useAuth } from "@/lib/auth-context";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -162,7 +165,7 @@ export default function EarningsPage() {
   const [settleAmount, setSettleAmount] = useState("");
   const [settleNote, setSettleNote] = useState("");
 
-  const isSettleAmountTooHigh = 
+  const isSettleAmountTooHigh =
     parseFloat(settleAmount) > (selectedSale?.dueAmount ?? 0);
 
   const queryClient = useQueryClient();
@@ -200,7 +203,10 @@ export default function EarningsPage() {
           setSettleAmount("");
           setSettleNote("");
         },
-        onError: () => toast.error("Failed to record payment"),
+        onError: (err: any) => {
+          const msg = err.response?.data?.message || "Failed to record payment";
+          toast.error(msg);
+        },
       },
     );
   };
@@ -973,19 +979,25 @@ export default function EarningsPage() {
             <Button
               className={cn(
                 "w-full sm:flex-1 order-1 sm:order-2 gap-3 font-black h-16 sm:h-11 rounded-2xl sm:rounded-xl shadow-xl text-base sm:text-[11px] uppercase tracking-widest transition-all",
-                isSettleAmountTooHigh 
-                  ? "bg-destructive hover:bg-destructive/90 text-white shadow-destructive/20" 
-                  : "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
+                isSettleAmountTooHigh
+                  ? "bg-destructive hover:bg-destructive/90 text-white shadow-destructive/20"
+                  : "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20",
               )}
               onClick={handleSettle}
-              disabled={payMutation.isPending || !settleAmount || isSettleAmountTooHigh}
+              disabled={
+                payMutation.isPending || !settleAmount || isSettleAmountTooHigh
+              }
             >
-              {payMutation.isPending 
-                ? "Processing..." 
-                : isSettleAmountTooHigh 
-                  ? "Amount exceeds balance" 
+              {payMutation.isPending
+                ? "Processing..."
+                : isSettleAmountTooHigh
+                  ? "Amount exceeds balance"
                   : "Record Payment"}
-              {isSettleAmountTooHigh ? <X className="w-5 h-5 sm:w-4 sm:h-4" /> : <ArrowRight className="w-5 h-5 sm:w-4 sm:h-4" />}
+              {isSettleAmountTooHigh ? (
+                <X className="w-5 h-5 sm:w-4 sm:h-4" />
+              ) : (
+                <ArrowRight className="w-5 h-5 sm:w-4 sm:h-4" />
+              )}
             </Button>
           </div>
         </DialogContent>
