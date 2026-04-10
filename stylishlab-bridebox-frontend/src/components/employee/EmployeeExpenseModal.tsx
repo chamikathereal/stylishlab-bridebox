@@ -40,7 +40,6 @@ import {
   Plus,
   History,
   Pencil,
-  Trash2,
   AlertCircle,
   Search,
 } from "lucide-react";
@@ -54,13 +53,22 @@ import {
 } from "@/api/generated/model";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { PayeeRegistrationDialog } from "@/components/shared/PayeeRegistrationDialog";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
 interface EmployeeExpenseModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 const COMMON_REASONS = [
-  "Typo in Amount",
+  "Wrong Amount",
   "Wrong Category",
   "Wrong Payee",
   "Duplicate Entry",
@@ -86,6 +94,12 @@ export function EmployeeExpenseModal({
     paidBy: user?.username || "",
     note: "",
   });
+
+  const [showPayeeDialog, setShowPayeeDialog] = useState(false);
+
+  const handleAddPayeeSuccess = (p: PayeeResponse) => {
+    setForm((prev) => ({ ...prev, payeeId: p.id?.toString() || "" }));
+  };
 
   // Reset form with user name when modal opens
   React.useEffect(() => {
@@ -371,32 +385,53 @@ export function EmployeeExpenseModal({
                       <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Payee *
                       </Label>
-                      <Select
-                        value={form.payeeId || ""}
-                        onValueChange={(val) =>
-                          setForm({ ...form, payeeId: val || "" })
-                        }
-                      >
-                        <SelectTrigger className="w-full h-11 p-6 bg-background border-muted/30 rounded-xl px-3 flex items-center">
-                          <SelectValue placeholder="Select payee">
-                            {form.payeeId
-                              ? getFilteredPayees(form.categoryId).find(
-                                  (p) => p.id?.toString() === form.payeeId,
-                                )?.name
-                              : null}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {getFilteredPayees(form.categoryId).map((p) => (
-                            <SelectItem
-                              key={p.id}
-                              value={p.id?.toString() || ""}
-                            >
-                              {p.name} ({p.type})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex gap-2">
+                        <Select
+                          value={form.payeeId || ""}
+                          onValueChange={(val) =>
+                            setForm({ ...form, payeeId: val || "" })
+                          }
+                        >
+                          <SelectTrigger className="w-full h-11 p-6 bg-background border-muted/30 rounded-xl px-3 flex items-center">
+                            <SelectValue placeholder="Select payee">
+                              {form.payeeId
+                                ? getFilteredPayees(form.categoryId).find(
+                                    (p) => p.id?.toString() === form.payeeId,
+                                  )?.name
+                                : null}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getFilteredPayees(form.categoryId).map((p) => (
+                              <SelectItem
+                                key={p.id}
+                                value={p.id?.toString() || ""}
+                              >
+                                {p.name} ({p.type})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <Tooltip>
+                          <TooltipTrigger
+                            type="button"
+                            className={cn(
+                              buttonVariants({
+                                variant: "outline",
+                                size: "icon",
+                              }),
+                              "h-11 w-11 shrink-0 rounded-xl border-emerald-500/20 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 hover:border-emerald-500/40",
+                            )}
+                            onClick={() => setShowPayeeDialog(true)}
+                          >
+                            <Plus className="w-5 h-5" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Quick Add Payee</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -518,13 +553,13 @@ export function EmployeeExpenseModal({
                                   {formatCurrency(e.amount ?? undefined)}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                                     {isEditable(e.expenseDate || undefined) && (
                                       <>
                                         <Button
                                           size="icon"
-                                          variant="ghost"
-                                          className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                                          variant="outline"
+                                          className="h-8 w-8 rounded-lg border-blue-500/30 bg-blue-500/5 text-blue-500 hover:bg-blue-500/10 hover:border-blue-500/50 hover:text-blue-600 transition-all active:scale-90"
                                           onClick={() => {
                                             setEditItem(e);
                                             setEditForm({
@@ -543,14 +578,14 @@ export function EmployeeExpenseModal({
                                         >
                                           <Pencil className="h-3.5 w-3.5" />
                                         </Button>
-                                        <Button
+                                        {/* <Button
                                           size="icon"
-                                          variant="ghost"
-                                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                          variant="outline"
+                                          className="h-8 w-8 rounded-lg border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:border-destructive/50 transition-all active:scale-90"
                                           onClick={() => handleDelete(e.id!)}
                                         >
                                           <Trash2 className="h-3.5 w-3.5" />
-                                        </Button>
+                                        </Button> */}
                                       </>
                                     )}
                                   </div>
@@ -627,8 +662,8 @@ export function EmployeeExpenseModal({
                                 <div className="flex gap-2">
                                   <Button
                                     size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 text-blue-500 border border-blue-100 bg-blue-50/30"
+                                    variant="outline"
+                                    className="h-9 w-9 rounded-xl border-blue-500/30 bg-blue-500/5 text-blue-500 hover:bg-blue-500/10 hover:border-blue-500/50 active:scale-95 transition-all shadow-sm shadow-blue-500/5"
                                     onClick={() => {
                                       setEditItem(e);
                                       setEditForm({
@@ -643,16 +678,16 @@ export function EmployeeExpenseModal({
                                       });
                                     }}
                                   >
-                                    <Pencil className="h-3 w-3" />
+                                    <Pencil className="h-4 w-4" />
                                   </Button>
-                                  <Button
+                                  {/* <Button
                                     size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 text-destructive border border-destructive/10 bg-destructive/5"
+                                    variant="outline"
+                                    className="h-9 w-9 rounded-xl border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:border-destructive/50 active:scale-95 transition-all shadow-sm shadow-destructive/5"
                                     onClick={() => handleDelete(e.id!)}
                                   >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button> */}
                                 </div>
                               )}
                             </div>
@@ -924,6 +959,12 @@ export function EmployeeExpenseModal({
           </div>
         </DialogContent>
       </Dialog>
+
+      <PayeeRegistrationDialog
+        open={showPayeeDialog}
+        onOpenChange={setShowPayeeDialog}
+        onSuccess={handleAddPayeeSuccess}
+      />
     </>
   );
 }

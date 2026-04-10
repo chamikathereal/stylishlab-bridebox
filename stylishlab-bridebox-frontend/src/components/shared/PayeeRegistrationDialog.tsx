@@ -16,12 +16,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Building2,
-  Phone,
-  StickyNote,
-  UserSquare2,
-} from "lucide-react";
+import { Building2, Phone, StickyNote, UserSquare2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { PayeeResponse } from "@/api/generated/model";
@@ -43,7 +38,12 @@ export function PayeeRegistrationDialog({
   const updateMutation = useUpdate1();
   const queryClient = useQueryClient();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    name: string;
+    type: string;
+    mobile: string;
+    notes: string;
+  }>({
     name: "",
     type: "",
     mobile: "",
@@ -51,15 +51,16 @@ export function PayeeRegistrationDialog({
   });
 
   useEffect(() => {
-    if (editingPayee) {
-      setForm({
-        name: editingPayee.name || "",
-        type: editingPayee.type || "",
-        mobile: editingPayee.mobile || "",
-        notes: editingPayee.notes || "",
-      });
-    } else {
-      setForm({ name: "", type: "", mobile: "", notes: "" });
+    if (open) {
+      const timer = setTimeout(() => {
+        setForm({
+          name: editingPayee?.name || "",
+          type: editingPayee?.type || "",
+          mobile: editingPayee?.mobile || "",
+          notes: editingPayee?.notes || "",
+        });
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [editingPayee, open]);
 
@@ -136,12 +137,12 @@ export function PayeeRegistrationDialog({
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase text-muted-foreground ml-1">
-                Entity Name *
+                Payee Name *
               </Label>
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="E.g. Commercial Bank, Beauty Supplies"
+                  placeholder="E.g. Nimal (Commercial Bank, Supplies"
                   className="pl-9 h-11"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -175,9 +176,7 @@ export function PayeeRegistrationDialog({
                   placeholder="+94 XX XXX XXXX"
                   className="pl-9 h-11"
                   value={form.mobile}
-                  onChange={(e) =>
-                    setForm({ ...form, mobile: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, mobile: e.target.value })}
                 />
               </div>
             </div>
@@ -192,9 +191,7 @@ export function PayeeRegistrationDialog({
                   placeholder="Add specific details or account info..."
                   className="w-full min-h-[100px] rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                   value={form.notes}
-                  onChange={(e) =>
-                    setForm({ ...form, notes: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 />
               </div>
             </div>

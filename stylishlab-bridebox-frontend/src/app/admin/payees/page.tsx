@@ -5,23 +5,12 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
   useGetAll2,
-  useCreate2,
-  useUpdate1,
   useToggleStatus1,
 } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -40,6 +29,7 @@ import {
   Search,
   LayoutGrid,
   List,
+  UserSquare2,
 } from "lucide-react";
 import { PayeeRegistrationDialog } from "@/components/shared/PayeeRegistrationDialog";
 import { toast } from "sonner";
@@ -49,8 +39,6 @@ import { cn } from "@/lib/utils";
 
 export default function PayeesPage() {
   const { data: res, isLoading } = useGetAll2();
-  const createMutation = useCreate2();
-  const updateMutation = useUpdate1();
   const toggleMutation = useToggleStatus1();
   const queryClient = useQueryClient();
 

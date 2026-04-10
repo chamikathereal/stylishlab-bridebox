@@ -8,6 +8,8 @@ import {
   useGetAll3,
   useRecord,
   useGetCategories,
+  useUpdate2,
+  useDelete,
 } from "@/api/generated/endpoints/expense-management/expense-management";
 import { useGetAll2 as useGetPayees } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
 import {
@@ -20,7 +22,7 @@ import {
 import { StatCard } from "@/components/shared/StatCard";
 import { useAuth } from "@/lib/auth-context";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -49,6 +51,8 @@ import {
   ReceiptText,
   Activity,
   FilterX,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -64,11 +68,23 @@ function formatCurrency(val?: number) {
   return `Rs. ${(val ?? 0).toLocaleString()}`;
 }
 
+const COMMON_REASONS = [
+  "Typo in Amount",
+  "Wrong Category",
+  "Wrong Payee",
+  "Duplicate Entry",
+  "Incorrect Note",
+  "Special Reason",
+];
+
 export default function ExpensesPage() {
   const { data: res, isLoading } = useGetAll3();
   const { data: catRes } = useGetCategories();
   const { data: payeeRes } = useGetPayees();
   const createMutation = useRecord();
+  const updateMutation = useUpdate2();
+  const deleteMutation = useDelete();
+
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -99,6 +115,18 @@ export default function ExpensesPage() {
   );
 
   const [payeeDialogOpen, setPayeeDialogOpen] = useState(false);
+
+  // Edit State
+  const [editItem, setEditItem] = useState<ExpenseResponse | null>(null);
+  const [editForm, setEditForm] = useState({
+    categoryId: "",
+    payeeId: "",
+    amount: "",
+    paidBy: "",
+    note: "",
+    editReason: "",
+    editNote: "",
+  });
 
   // Analytics State
   const [kpiPeriod, setKpiPeriod] = useState<
@@ -159,7 +187,38 @@ export default function ExpensesPage() {
     }
   }, [open, user?.username]);
 
-  const totalExpensesAudit = expenses.reduce(
+  const isDateInSelectedWeek = (dateStr: string, targetDate: string) => {
+    const date = new Date(dateStr);
+    const target = new Date(targetDate);
+    const first = target.getDate() - target.getDay();
+    const last = first + 6;
+    const firstDay = new Date(target.setDate(first));
+    const lastDay = new Date(target.setDate(last));
+    firstDay.setHours(0, 0, 0, 0);
+    lastDay.setHours(23, 59, 59, 999);
+    return date >= firstDay && date <= lastDay;
+  };
+
+  const filteredRecords = React.useMemo(() => {
+    if (kpiPeriod === "total") return expenses;
+
+    return expenses.filter((e) => {
+      const dateStr = e.expenseDate || e.createdAt;
+      if (!dateStr) return false;
+      const recordDate = dateStr.split("T")[0];
+
+      if (kpiPeriod === "daily") return recordDate === selectedDate;
+      if (kpiPeriod === "monthly") return recordDate.startsWith(selectedMonth);
+      if (kpiPeriod === "yearly")
+        return recordDate.startsWith(selectedYear.toString());
+      if (kpiPeriod === "weekly")
+        return isDateInSelectedWeek(recordDate, selectedDate);
+
+      return true;
+    });
+  }, [expenses, kpiPeriod, selectedDate, selectedMonth, selectedYear]);
+
+  const totalExpensesAudit = filteredRecords.reduce(
     (sum, e) => sum + (e.amount ?? 0),
     0,
   );
@@ -240,6 +299,66 @@ export default function ExpensesPage() {
     );
   };
 
+  const handleUpdate = () => {
+    if (
+      !editItem ||
+      !editForm.categoryId ||
+      !editForm.payeeId ||
+      !editForm.amount ||
+      !editForm.editReason
+    ) {
+      toast.error("Required fields and edit reason are missing");
+      return;
+    }
+
+    if (editForm.editReason === "Special Reason" && !editForm.editNote) {
+      toast.error("Please add a note for the special reason");
+      return;
+    }
+
+    updateMutation.mutate(
+      {
+        id: editItem.id!,
+        data: {
+          categoryId: parseInt(editForm.categoryId),
+          payeeId: editForm.payeeId ? parseInt(editForm.payeeId) : undefined,
+          amount: parseFloat(editForm.amount),
+          note: editForm.note || undefined,
+          paidBy: editForm.paidBy,
+          editReason: editForm.editReason,
+          editNote: editForm.editNote || undefined,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Expense updated!");
+          queryClient.invalidateQueries();
+          setEditItem(null);
+        },
+        onError: (err: any) => {
+          toast.error(err.response?.data?.message || "Failed to update");
+        },
+      },
+    );
+  };
+
+  const handleDelete = (id: number) => {
+    if (!confirm("Are you sure you want to delete this record?")) return;
+
+    deleteMutation.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          toast.success("Expense deleted");
+          queryClient.invalidateQueries();
+        },
+        onError: (err: any) => {
+          toast.error(err.response?.data?.message || "Failed to delete");
+        },
+      },
+    );
+  };
+
   if (isLoading) return <LoadingSpinner />;
 
   return (
@@ -272,9 +391,9 @@ export default function ExpensesPage() {
           variant="primary"
           subtitle="Fixed recurring costs"
         />
-        <StatCard
+         <StatCard
           title="Expense Count"
-          value={`${kpis.transactions} Records`}
+          value={`${filteredRecords.length} Records`}
           icon={Activity}
           variant="primary"
           subtitle="Transaction volume"
@@ -386,18 +505,23 @@ export default function ExpensesPage() {
                 <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
                   Status
                 </TableHead>
+                <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider text-blue-600">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((e) => (
+              {filteredRecords.map((record) => (
                 <TableRow
-                  key={e.id}
+                  key={record.id}
                   className="group hover:bg-emerald-500/2 transition-colors border-muted-foreground/10 cursor-pointer"
-                  onClick={() => setViewAuditItem(e)}
+                  onClick={() => {
+                    if (record.lastEditReason) setViewAuditItem(record);
+                  }}
                 >
                   <TableCell className="px-6 py-5 text-xs text-muted-foreground font-medium">
-                    {e.createdAt
-                      ? new Date(e.createdAt).toLocaleDateString("en-US", {
+                    {record.createdAt
+                      ? new Date(record.createdAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
@@ -405,7 +529,7 @@ export default function ExpensesPage() {
                       : "N/A"}
                   </TableCell>
                   <TableCell className="px-6 py-5 font-bold text-xs tracking-tighter text-blue-600/80">
-                    EXP-{e.id?.toString().padStart(4, "0")}
+                    EXP-{record.id?.toString().padStart(4, "0")}
                   </TableCell>
                   <TableCell className="px-6 py-5">
                     <div className="flex flex-col gap-1">
@@ -413,9 +537,9 @@ export default function ExpensesPage() {
                         variant="outline"
                         className="text-[10px] font-bold tracking-tight bg-muted/20 border-muted-foreground/10 uppercase w-fit"
                       >
-                        {e.categoryName}
+                        {record.categoryName}
                       </Badge>
-                      {e.lastEditReason && (
+                      {record.lastEditReason && (
                         <Badge
                           variant="secondary"
                           className="w-fit scale-75 origin-left bg-amber-500/10 text-amber-600 border-amber-500/20 font-bold"
@@ -428,23 +552,23 @@ export default function ExpensesPage() {
                   <TableCell className="px-6 py-5">
                     <div className="flex flex-col gap-0.5">
                       <span className="font-semibold text-sm">
-                        {e.payeeName}
+                        {record.payeeName}
                       </span>
                       <span className="text-[10px] uppercase text-muted-foreground font-bold italic">
-                        {e.note || "No notes"}
+                        {record.note || "No notes"}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="px-6 py-5 text-right font-black text-sm text-amber-600">
-                    {formatCurrency(e.amount)}
+                    {formatCurrency(record.amount)}
                   </TableCell>
                   <TableCell className="px-6 py-5">
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
-                        Paid by: <span className="text-foreground">{e.paidBy}</span>
+                        Paid by: <span className="text-foreground">{record.paidBy}</span>
                       </span>
                       <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
-                        Rec by: <span className="text-blue-600">{e.recordedByUsername}</span>
+                        Rec by: <span className="text-blue-600">{record.recordedByUsername}</span>
                       </span>
                     </div>
                   </TableCell>
@@ -455,6 +579,41 @@ export default function ExpensesPage() {
                     >
                       Completed
                     </Badge>
+                  </TableCell>
+                  <TableCell className="px-6 py-5 text-right">
+                    <div className="flex justify-end gap-2 transition-all duration-300">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8 rounded-lg border-blue-500/30 bg-blue-500/5 text-blue-500 hover:bg-blue-500/10 hover:border-blue-500/50 hover:text-blue-600 transition-all active:scale-90"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditItem(record);
+                          setEditForm({
+                            categoryId: record.categoryId?.toString() || "",
+                            payeeId: record.payeeId?.toString() || "",
+                            amount: record.amount?.toString() || "",
+                            paidBy: record.paidBy || "",
+                            note: record.note || "",
+                            editReason: "",
+                            editNote: "",
+                          });
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8 rounded-lg border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:border-destructive/50 transition-all active:scale-90"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(record.id!);
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -514,24 +673,20 @@ export default function ExpensesPage() {
                     </option>
                   ))}
                 </select>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="outline"
-                        className="h-10 w-10 shrink-0 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all"
-                        onClick={() => setPayeeDialogOpen(true)}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-[10px] font-bold">Register New Payee</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "icon" }),
+                      "h-10 w-10 shrink-0 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all flex items-center justify-center"
+                    )}
+                    onClick={() => setPayeeDialogOpen(true)}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-[10px] font-bold">Register New Payee</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
             <div>
@@ -672,9 +827,131 @@ export default function ExpensesPage() {
         onSuccess={(newPayee) => {
           if (newPayee.id) {
             setForm((prev) => ({ ...prev, payeeId: newPayee.id!.toString() }));
+            setEditForm((prev) => ({ ...prev, payeeId: newPayee.id!.toString() }));
           }
         }}
       />
+
+      {/* Edit Expense Dialog */}
+      <Dialog
+        open={!!editItem}
+        onOpenChange={(v) => !v && setEditItem(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-blue-600" />
+              Edit Expense Record
+            </DialogTitle>
+            <DialogDescription>
+              Modify historical expense data. Reason for audit is mandatory.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground">Category *</Label>
+                <select
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  value={editForm.categoryId}
+                  onChange={(e) => setEditForm({ ...editForm, categoryId: e.target.value, payeeId: "" })}
+                >
+                  <option value="">Select category</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.categoryName}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground">Payee *</Label>
+                <select
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  value={editForm.payeeId}
+                  onChange={(e) => setEditForm({ ...editForm, payeeId: e.target.value })}
+                >
+                  <option value="">Select Payee</option>
+                  {/* Reuse filtering logic if needed, or just show all for admin */}
+                  {payees.filter(p => p.isActive).map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground">Amount (Rs.) *</Label>
+                <Input
+                  type="number"
+                  value={editForm.amount}
+                  onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground">Paid By *</Label>
+                <Input
+                  value={editForm.paidBy}
+                  onChange={(e) => setEditForm({ ...editForm, paidBy: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase text-muted-foreground">Note</Label>
+              <Input
+                value={editForm.note}
+                onChange={(e) => setEditForm({ ...editForm, note: e.target.value })}
+              />
+            </div>
+
+            <div className="pt-4 border-t border-muted/20 space-y-3">
+              <div className="p-3 bg-amber-50 rounded-lg flex items-start gap-2 border border-amber-100">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-[10px] text-amber-700 leading-tight font-medium">
+                  Administrative changes require an audit reason for financial transparency.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-amber-900">Reason for Change *</Label>
+                <select
+                  className="w-full h-10 rounded-md border border-amber-200 bg-background px-3 text-sm"
+                  value={editForm.editReason}
+                  onChange={(e) => setEditForm({ ...editForm, editReason: e.target.value })}
+                >
+                  <option value="">Why is this being edited?</option>
+                  {COMMON_REASONS.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
+
+              {editForm.editReason === "Special Reason" && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                   <Label className="text-xs font-bold uppercase text-amber-900">Specify Reason *</Label>
+                   <Input 
+                     placeholder="Details..."
+                     value={editForm.editNote}
+                     onChange={(e) => setEditForm({ ...editForm, editNote: e.target.value })}
+                   />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditItem(null)}>Cancel</Button>
+            <Button 
+                onClick={handleUpdate} 
+                disabled={updateMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Update Record
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

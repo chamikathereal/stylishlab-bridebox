@@ -75,8 +75,11 @@ public class PayrollServiceImpl implements PayrollService {
                 .map(Payroll::getNetPaid)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        BigDecimal netPending = (totalPending != null ? totalPending : BigDecimal.ZERO)
+                .subtract(totalAdvances != null ? totalAdvances : BigDecimal.ZERO);
+
         return AdminPayrollStatsResponse.builder()
-                .totalPendingSalary(totalPending != null ? totalPending : BigDecimal.ZERO)
+                .totalPendingSalary(netPending)
                 .totalPaidThisMonth(totalPaidThisMonth)
                 .totalAdvancesGiven(totalAdvances != null ? totalAdvances : BigDecimal.ZERO)
                 .employeesPendingPaymentCount(pendingCount)

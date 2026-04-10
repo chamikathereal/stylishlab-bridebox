@@ -598,9 +598,10 @@ export default function AdminSalaryPage() {
                 </div>
               </div>
               <div>
-                <Label>Approved Amount</Label>
+                <Label className="mb-2">Approved Amount</Label>
                 <Input
                   type="number"
+                  className="h-10"
                   value={approveAmount}
                   onChange={(e) => setApproveAmount(e.target.value)}
                 />
@@ -614,12 +615,17 @@ export default function AdminSalaryPage() {
               </div>
             </div>
           )}
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setAdvanceOpen(false)}>
+          <DialogFooter className="gap-2">
+            <Button
+              className="h-10"
+              variant="outline"
+              onClick={() => setAdvanceOpen(false)}
+            >
               Cancel
             </Button>
             <Button
               variant="destructive"
+              className="h-10"
               disabled={processMutation.isPending}
               onClick={() => handleProcessAdvance("REJECTED")}
             >
@@ -627,7 +633,7 @@ export default function AdminSalaryPage() {
               Reject
             </Button>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-emerald-600 h-10 hover:bg-emerald-700 text-white"
               disabled={processMutation.isPending}
               onClick={() => handleProcessAdvance("APPROVED")}
             >

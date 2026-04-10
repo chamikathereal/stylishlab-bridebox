@@ -138,7 +138,9 @@ export function EmployeeSalaryModal({
         </DialogHeader>
 
         {isLoading ? (
-          <div className="py-12"><LoadingSpinner /></div>
+          <div className="py-12">
+            <LoadingSpinner />
+          </div>
         ) : (
           <div className="space-y-6 min-w-0 w-full overflow-hidden">
             {/* Hero Card */}
@@ -394,8 +396,8 @@ export function EmployeeSalaryModal({
 
               {/* Mobile Card List View */}
               <div className="md:hidden divide-y divide-muted/10 w-full">
-                {tab === "HISTORY" && (
-                  history.length === 0 ? (
+                {tab === "HISTORY" &&
+                  (history.length === 0 ? (
                     <div className="py-12 text-center text-muted-foreground bg-muted/5">
                       <History className="w-8 h-8 opacity-20 mx-auto mb-2" />
                       <p className="text-sm">No settlement history</p>
@@ -405,7 +407,10 @@ export function EmployeeSalaryModal({
                       .filter(
                         (h) =>
                           formatCurrency(h.netPaid).includes(filter) ||
-                          (h.note && h.note.toLowerCase().includes(filter.toLowerCase())),
+                          (h.note &&
+                            h.note
+                              .toLowerCase()
+                              .includes(filter.toLowerCase())),
                       )
                       .sort(
                         (a, b) =>
@@ -413,15 +418,22 @@ export function EmployeeSalaryModal({
                           new Date(a.settledAt!).getTime(),
                       )
                       .map((h) => (
-                        <div key={h.id} className="p-4 space-y-3 bg-card hover:bg-muted/5 transition-colors">
+                        <div
+                          key={h.id}
+                          className="p-4 space-y-3 bg-card hover:bg-muted/5 transition-colors"
+                        >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 font-bold shrink-0">
                                 <Wallet className="w-4 h-4" />
                               </div>
                               <div className="min-w-0">
-                                <p className="font-semibold text-sm truncate">Settled</p>
-                                <p className="text-[10px] text-muted-foreground">{formatDate(h.settledAt)}</p>
+                                <p className="font-semibold text-sm truncate">
+                                  Settled
+                                </p>
+                                <p className="text-[10px] text-muted-foreground">
+                                  {formatDate(h.settledAt)}
+                                </p>
                               </div>
                             </div>
                             <div className="text-right shrink-0">
@@ -432,13 +444,21 @@ export function EmployeeSalaryModal({
                           </div>
                           <div className="grid grid-cols-2 gap-2 bg-muted/30 p-2 rounded-lg">
                             <div>
-                              <p className="text-[10px] text-muted-foreground uppercase font-medium">Gross Earned</p>
-                              <p className="text-xs font-semibold">{formatCurrency(h.totalEarnings)}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                                Gross Earned
+                              </p>
+                              <p className="text-xs font-semibold">
+                                {formatCurrency(h.totalEarnings)}
+                              </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-[10px] text-muted-foreground uppercase font-medium">Advances Taken</p>
+                              <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                                Advances Taken
+                              </p>
                               <p className="text-xs font-semibold text-amber-600">
-                                {(h.totalAdvances ?? 0) > 0 ? `-${formatCurrency(h.totalAdvances)}` : formatCurrency(0)}
+                                {(h.totalAdvances ?? 0) > 0
+                                  ? `-${formatCurrency(h.totalAdvances)}`
+                                  : formatCurrency(0)}
                               </p>
                             </div>
                           </div>
@@ -449,11 +469,10 @@ export function EmployeeSalaryModal({
                           )}
                         </div>
                       ))
-                  )
-                )}
+                  ))}
 
-                {tab === "ADVANCES" && (
-                  advances.length === 0 ? (
+                {tab === "ADVANCES" &&
+                  (advances.length === 0 ? (
                     <div className="py-12 text-center text-muted-foreground bg-muted/5">
                       <Banknote className="w-8 h-8 opacity-20 mx-auto mb-2" />
                       <p className="text-sm">No advance requests found</p>
@@ -463,7 +482,10 @@ export function EmployeeSalaryModal({
                       .filter(
                         (a) =>
                           formatCurrency(a.requestedAmount).includes(filter) ||
-                          (a.note && a.note.toLowerCase().includes(filter.toLowerCase())),
+                          (a.note &&
+                            a.note
+                              .toLowerCase()
+                              .includes(filter.toLowerCase())),
                       )
                       .sort(
                         (a, b) =>
@@ -471,15 +493,22 @@ export function EmployeeSalaryModal({
                           new Date(a.requestedAt!).getTime(),
                       )
                       .map((a) => (
-                        <div key={a.id} className="p-4 space-y-3 bg-card hover:bg-muted/5 transition-colors">
+                        <div
+                          key={a.id}
+                          className="p-4 space-y-3 bg-card hover:bg-muted/5 transition-colors"
+                        >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600 font-bold shrink-0">
                                 <Banknote className="w-4 h-4" />
                               </div>
                               <div className="min-w-0">
-                                <p className="font-semibold text-sm truncate">Request</p>
-                                <p className="text-[10px] text-muted-foreground">{formatDate(a.requestedAt)}</p>
+                                <p className="font-semibold text-sm truncate">
+                                  Request
+                                </p>
+                                <p className="text-[10px] text-muted-foreground">
+                                  {formatDate(a.requestedAt)}
+                                </p>
                               </div>
                             </div>
                             <div className="text-right shrink-0">
@@ -499,13 +528,21 @@ export function EmployeeSalaryModal({
                           </div>
                           <div className="grid grid-cols-2 gap-2 bg-muted/30 p-2 rounded-lg">
                             <div>
-                              <p className="text-[10px] text-muted-foreground uppercase font-medium">Requested</p>
-                              <p className="text-xs font-semibold">{formatCurrency(a.requestedAmount)}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                                Requested
+                              </p>
+                              <p className="text-xs font-semibold">
+                                {formatCurrency(a.requestedAmount)}
+                              </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-[10px] text-muted-foreground uppercase font-medium">Approved</p>
+                              <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                                Approved
+                              </p>
                               <p className="text-xs font-semibold text-emerald-600">
-                                {a.approvedAmount ? formatCurrency(a.approvedAmount) : "-"}
+                                {a.approvedAmount
+                                  ? formatCurrency(a.approvedAmount)
+                                  : "-"}
                               </p>
                             </div>
                           </div>
@@ -516,8 +553,7 @@ export function EmployeeSalaryModal({
                           )}
                         </div>
                       ))
-                  )
-                )}
+                  ))}
               </div>
             </Card>
           </div>
@@ -540,19 +576,21 @@ export function EmployeeSalaryModal({
                 </span>
               </div>
               <div>
-                <Label>Amount to Request (Rs.)</Label>
+                <Label className="mb-2">Amount to Request (Rs.)</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
+                  className="h-10"
                   value={advanceAmount}
                   onChange={(e) => setAdvanceAmount(e.target.value)}
                   autoFocus
                 />
               </div>
               <div>
-                <Label>Reason / Note</Label>
+                <Label className="mb-2">Reason / Note</Label>
                 <Input
                   placeholder="e.g. Personal emergency"
+                  className="h-10"
                   value={advanceNote}
                   onChange={(e) => setAdvanceNote(e.target.value)}
                 />
@@ -567,11 +605,15 @@ export function EmployeeSalaryModal({
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setAdvanceOpen(false)}>
+              <Button
+                className="h-10"
+                variant="outline"
+                onClick={() => setAdvanceOpen(false)}
+              >
                 Cancel
               </Button>
               <Button
-                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="gap-2 h-10 bg-emerald-600 hover:bg-emerald-700 text-white"
                 disabled={submitAdvanceMutation.isPending}
                 onClick={handleRequestAdvance}
               >
