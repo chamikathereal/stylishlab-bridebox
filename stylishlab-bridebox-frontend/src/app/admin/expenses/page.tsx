@@ -57,6 +57,8 @@ import {
   ExpenseCategoryResponse,
   PayeeResponse,
 } from "@/api/generated/model";
+import { PayeeRegistrationDialog } from "@/components/shared/PayeeRegistrationDialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 function formatCurrency(val?: number) {
   return `Rs. ${(val ?? 0).toLocaleString()}`;
@@ -95,6 +97,8 @@ export default function ExpensesPage() {
   const [viewAuditItem, setViewAuditItem] = useState<ExpenseResponse | null>(
     null,
   );
+
+  const [payeeDialogOpen, setPayeeDialogOpen] = useState(false);
 
   // Analytics State
   const [kpiPeriod, setKpiPeriod] = useState<
@@ -497,18 +501,38 @@ export default function ExpensesPage() {
               <Label className="text-xs mb-2 font-semibold uppercase tracking-wider text-muted-foreground">
                 Payee *
               </Label>
-              <select
-                className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                value={form.payeeId}
-                onChange={(e) => setForm({ ...form, payeeId: e.target.value })}
-              >
-                <option value="">Select Payee</option>
-                {filteredPayees.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.type})
-                  </option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select
+                  className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  value={form.payeeId}
+                  onChange={(e) => setForm({ ...form, payeeId: e.target.value })}
+                >
+                  <option value="">Select Payee</option>
+                  {filteredPayees.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.type})
+                    </option>
+                  ))}
+                </select>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        className="h-10 w-10 shrink-0 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all"
+                        onClick={() => setPayeeDialogOpen(true)}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-[10px] font-bold">Register New Payee</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             </div>
             <div>
               <Label className="text-xs mb-2 font-semibold uppercase tracking-wider text-muted-foreground">
@@ -641,6 +665,16 @@ export default function ExpensesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <PayeeRegistrationDialog
+        open={payeeDialogOpen}
+        onOpenChange={setPayeeDialogOpen}
+        onSuccess={(newPayee) => {
+          if (newPayee.id) {
+            setForm((prev) => ({ ...prev, payeeId: newPayee.id!.toString() }));
+          }
+        }}
+      />
     </div>
   );
 }
