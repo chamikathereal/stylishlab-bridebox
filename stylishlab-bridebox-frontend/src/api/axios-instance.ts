@@ -1,7 +1,7 @@
 import Axios, { AxiosRequestConfig, AxiosError } from 'axios';
 
 export const AXIOS_INSTANCE = Axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+  baseURL: 'http://localhost:8080',
 });
 
 AXIOS_INSTANCE.interceptors.request.use((config) => {
