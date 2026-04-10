@@ -65,6 +65,10 @@ export default function NewSalePage() {
   const [newCustName, setNewCustName] = useState("");
   const [newCustMobile, setNewCustMobile] = useState("");
   const [showNewCust, setShowNewCust] = useState(false);
+  
+  const isAmountTooHigh = 
+    paymentStatus === "PARTIAL" && 
+    parseFloat(paidAmount) > (selectedService?.price ?? 0);
 
   const { data: allCustRes } = useGetCustomers();
   const { data: searchRes } = useSearch(
@@ -151,7 +155,10 @@ export default function NewSalePage() {
           queryClient.invalidateQueries();
           router.push("/employee/dashboard");
         },
-        onError: () => toast.error("Failed to record sale"),
+        onError: (err: any) => {
+          const msg = err.response?.data?.message || "Failed to record sale";
+          toast.error(msg);
+        },
       },
     );
   };
@@ -444,13 +451,22 @@ export default function NewSalePage() {
           )}
 
           <Button
-            className="w-full h-14 text-base gap-3 bg-linear-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 shadow-lg rounded-xl"
+            className={cn(
+              "w-full h-14 text-base gap-3 shadow-lg rounded-xl transition-all",
+              isAmountTooHigh 
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
+                : "bg-linear-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500"
+            )}
             onClick={handleSubmit}
-            disabled={createSaleMutation.isPending}
+            disabled={createSaleMutation.isPending || isAmountTooHigh}
           >
             {createSaleMutation.isPending ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" /> Recording...
+              </>
+            ) : isAmountTooHigh ? (
+              <>
+                <DollarSign className="w-5 h-5" /> Price is High
               </>
             ) : (
               <>
