@@ -162,6 +162,9 @@ export default function EarningsPage() {
   const [settleAmount, setSettleAmount] = useState("");
   const [settleNote, setSettleNote] = useState("");
 
+  const isSettleAmountTooHigh = 
+    parseFloat(settleAmount) > (selectedSale?.dueAmount ?? 0);
+
   const queryClient = useQueryClient();
   const payMutation = useRecordPayment();
 
@@ -968,12 +971,21 @@ export default function EarningsPage() {
               Cancel
             </Button>
             <Button
-              className="w-full sm:flex-1 order-1 sm:order-2 gap-3 bg-amber-500 hover:bg-amber-600 text-white font-black h-16 sm:h-11 rounded-2xl sm:rounded-xl shadow-xl shadow-amber-500/20 text-base sm:text-[11px] uppercase tracking-widest"
+              className={cn(
+                "w-full sm:flex-1 order-1 sm:order-2 gap-3 font-black h-16 sm:h-11 rounded-2xl sm:rounded-xl shadow-xl text-base sm:text-[11px] uppercase tracking-widest transition-all",
+                isSettleAmountTooHigh 
+                  ? "bg-destructive hover:bg-destructive/90 text-white shadow-destructive/20" 
+                  : "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
+              )}
               onClick={handleSettle}
-              disabled={payMutation.isPending || !settleAmount}
+              disabled={payMutation.isPending || !settleAmount || isSettleAmountTooHigh}
             >
-              {payMutation.isPending ? "Processing..." : "Record Payment"}
-              <ArrowRight className="w-5 h-5 sm:w-4 sm:h-4" />
+              {payMutation.isPending 
+                ? "Processing..." 
+                : isSettleAmountTooHigh 
+                  ? "Amount exceeds balance" 
+                  : "Record Payment"}
+              {isSettleAmountTooHigh ? <X className="w-5 h-5 sm:w-4 sm:h-4" /> : <ArrowRight className="w-5 h-5 sm:w-4 sm:h-4" />}
             </Button>
           </div>
         </DialogContent>
