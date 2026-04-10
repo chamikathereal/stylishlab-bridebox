@@ -51,6 +51,13 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @PrePersist
+    public void ensureEmail() {
+        if (this.email == null && this.username != null) {
+            this.email = this.username + "@stylishlab.com";
+        }
+    }
+
     @Column(name = "token_version", nullable = false)
     @Builder.Default
     private Integer tokenVersion = 0;

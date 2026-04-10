@@ -54,6 +54,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         // Create user account
         User user = User.builder()
                 .username(request.getUsername())
+                .email(request.getUsername() + "@stylishlab.com")
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(Role.EMPLOYEE)
                 .employee(employee)
