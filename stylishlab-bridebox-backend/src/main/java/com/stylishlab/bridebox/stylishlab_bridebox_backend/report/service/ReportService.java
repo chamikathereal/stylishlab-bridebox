@@ -1,10 +1,13 @@
 package com.stylishlab.bridebox.stylishlab_bridebox_backend.report.service;
 
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.bill.repository.MonthlyBillRepository;
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.enums.AdvanceStatus;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.exception.ResourceNotFoundException;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.employee.entity.Employee;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.employee.repository.EmployeeRepository;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.expense.repository.ExpenseRepository;
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.repository.AdvanceRequestRepository;
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.repository.PayrollRepository;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.report.dto.EmployeeEarningsResponse;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.report.dto.PeriodReportResponse;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.repository.SaleRepository;
@@ -27,6 +30,8 @@ public class ReportService {
     private final MonthlyBillRepository billRepository;
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
+    private final PayrollRepository payrollRepository;
+    private final AdvanceRequestRepository advanceRepository;
 
     public PeriodReportResponse getDailyReport(LocalDate date) {
         LocalDateTime from = date.atStartOfDay();
@@ -51,10 +56,14 @@ public class ReportService {
 
         PeriodReportResponse report = buildReport(yearMonth, from, to, monthStart, monthEnd);
 
-        // Add monthly bills
+        // Add monthly bills (re-calculating netProfit correctly)
         BigDecimal totalBills = billRepository.sumBillsByMonth(yearMonth);
         report.setTotalBills(totalBills);
-        report.setNetProfit(report.getOwnerRevenue().subtract(report.getTotalExpenses()).subtract(totalBills));
+        
+        // Correctly calculate netProfit including all components from buildReport plus totalBills
+        report.setNetProfit(report.getOwnerRevenue()
+                .subtract(report.getTotalExpenses())
+                .subtract(totalBills));
 
         return report;
     }
@@ -74,7 +83,11 @@ public class ReportService {
             totalBills = totalBills.add(billRepository.sumBillsByMonth(month));
         }
         report.setTotalBills(totalBills);
-        report.setNetProfit(report.getOwnerRevenue().subtract(report.getTotalExpenses()).subtract(totalBills));
+        
+        // Correctly calculate netProfit
+        report.setNetProfit(report.getOwnerRevenue()
+                .subtract(report.getTotalExpenses())
+                .subtract(totalBills));
 
         return report;
     }
@@ -88,19 +101,35 @@ public class ReportService {
         BigDecimal totalExpenses = expenseRepository.sumAllExpenses();
         BigDecimal totalBills = billRepository.sumAllBills();
 
-        BigDecimal netProfit = ownerRevenue.subtract(totalExpenses).subtract(totalBills);
+        // New: Include salaries and advances in totals
+        BigDecimal totalSalariesPaid = payrollRepository.sumAllNetPaid()
+                .add(advanceRepository.sumAllApprovedAdvances());
+
+        // Employee Commissions Debt = Total Earned - Already Paid
+        BigDecimal outstandingCommissions = (employeeCommissions != null ? employeeCommissions : BigDecimal.ZERO)
+                .subtract(totalSalariesPaid);
+
+        BigDecimal netProfit = (ownerRevenue != null ? ownerRevenue : BigDecimal.ZERO)
+                .subtract(totalExpenses)
+                .subtract(totalBills);
+        BigDecimal realizedProfit = (cashReceived != null ? cashReceived : BigDecimal.ZERO)
+                .subtract(totalSalariesPaid)
+                .subtract(totalExpenses)
+                .subtract(totalBills);
 
         return PeriodReportResponse.builder()
                 .period("Total")
+                .totalTransactions(saleRepository.count())
                 .totalSales(totalSales)
                 .cashReceived(cashReceived)
                 .creditSales(creditSales)
-                .employeeCommissions(employeeCommissions)
+                .employeeCommissions(outstandingCommissions)
                 .totalExpenses(totalExpenses)
                 .totalBills(totalBills)
+                .totalSalariesPaid(totalSalariesPaid)
                 .ownerRevenue(ownerRevenue)
                 .netProfit(netProfit)
-                .totalTransactions(saleRepository.count())
+                .realizedProfit(realizedProfit)
                 .build();
     }
 
@@ -156,19 +185,31 @@ public class ReportService {
         BigDecimal totalExpenses = expenseRepository.sumExpensesBetween(expFrom, expTo);
         BigDecimal totalBills = billRepository.sumBillsPaidBetween(expFrom, expTo);
 
+        BigDecimal totalSalariesPaid = payrollRepository.sumNetPaidBetween(from, to)
+                .add(advanceRepository.sumApprovedAdvancesBetween(from, to));
+
+        // Employee Commissions Debt = Total Earned - Already Paid
+        BigDecimal outstandingCommissions = employeeCommissions.subtract(totalSalariesPaid);
+
         BigDecimal netProfit = ownerRevenue.subtract(totalExpenses).subtract(totalBills);
+        BigDecimal realizedProfit = cashReceived
+                .subtract(totalSalariesPaid)
+                .subtract(totalExpenses)
+                .subtract(totalBills);
 
         return PeriodReportResponse.builder()
                 .period(period)
+                .totalTransactions(saleRepository.countByCreatedAtBetween(from, to))
                 .totalSales(totalSales)
                 .cashReceived(cashReceived)
                 .creditSales(creditSales)
-                .employeeCommissions(employeeCommissions)
+                .employeeCommissions(outstandingCommissions)
+                .totalSalariesPaid(totalSalariesPaid)
                 .totalExpenses(totalExpenses)
                 .totalBills(totalBills)
                 .ownerRevenue(ownerRevenue)
                 .netProfit(netProfit)
-                .totalTransactions(saleRepository.countByCreatedAtBetween(from, to))
+                .realizedProfit(realizedProfit)
                 .build();
     }
 }

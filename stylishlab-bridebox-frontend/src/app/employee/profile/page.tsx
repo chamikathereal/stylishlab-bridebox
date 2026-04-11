@@ -20,11 +20,20 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Lock, Shield, LogOut, KeyRound, Wallet, Plus, Mail, User as UserIcon } from "lucide-react";
+import {
+  Lock,
+  Shield,
+  LogOut,
+  KeyRound,
+  Wallet,
+  Plus,
+  Mail,
+  User as UserIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { EmployeeSalaryModal } from "@/components/employee/EmployeeSalaryModal";
-import { EmployeeExpenseModal } from "@/components/employee/EmployeeExpenseModal";
+import { EmployeeSalaryModal } from "@/components/employee/salary/EmployeeSalaryModal";
+import { EmployeeExpenseModal } from "@/components/employee/expenses/EmployeeExpenseModal";
 
 export default function EmployeeProfile() {
   const { logout } = useAuth();
@@ -51,7 +60,7 @@ export default function EmployeeProfile() {
   };
 
   const handleUpdateProfile = () => {
-    if (!email.trim() || !email.includes('@')) {
+    if (!email.trim() || !email.includes("@")) {
       toast.error("Please enter a valid email address");
       return;
     }
@@ -68,7 +77,7 @@ export default function EmployeeProfile() {
           setIsEditOpen(false);
         },
         onError: () => toast.error("Failed to update profile"),
-      }
+      },
     );
   };
 
@@ -121,11 +130,14 @@ export default function EmployeeProfile() {
           setIsPwdOpen(false);
         },
         onError: (error: unknown) => {
-          const apiError = error as { response?: { data?: { message?: string } } };
-          const msg = apiError.response?.data?.message || "Failed to send reset email";
+          const apiError = error as {
+            response?: { data?: { message?: string } };
+          };
+          const msg =
+            apiError.response?.data?.message || "Failed to send reset email";
           toast.error(msg);
         },
-      }
+      },
     );
   };
 
@@ -163,7 +175,12 @@ export default function EmployeeProfile() {
                 </div>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleOpenEdit} className="text-primary hover:text-primary hover:bg-primary/5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleOpenEdit}
+              className="text-primary hover:text-primary hover:bg-primary/5"
+            >
               Edit Profile
             </Button>
           </div>
@@ -329,7 +346,9 @@ export default function EmployeeProfile() {
                   onClick={handleForgotPassword}
                   disabled={forgotPwdMutation.isPending}
                 >
-                  {forgotPwdMutation.isPending ? "Sending link..." : "Forgot current password?"}
+                  {forgotPwdMutation.isPending
+                    ? "Sending link..."
+                    : "Forgot current password?"}
                 </Button>
               </div>
             </div>
@@ -391,7 +410,10 @@ export default function EmployeeProfile() {
       </Dialog>
 
       <EmployeeSalaryModal open={isSalaryOpen} onOpenChange={setIsSalaryOpen} />
-      <EmployeeExpenseModal open={isExpenseOpen} onOpenChange={setIsExpenseOpen} />
+      <EmployeeExpenseModal
+        open={isExpenseOpen}
+        onOpenChange={setIsExpenseOpen}
+      />
     </div>
   );
 }

@@ -5,16 +5,11 @@ import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { useMyEarnings } from "@/api/generated/endpoints/reports-analytics/reports-analytics";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  DollarSign,
-  TrendingUp,
-  Scissors,
-  Calendar,
-  PlusCircle,
-} from "lucide-react";
+import { TrendingUp, Scissors, Calendar, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { useState, useMemo } from "react";
+import { getLocalDateString } from "@/lib/utils";
 
 function formatCurrency(val?: number) {
   return `Rs. ${(val ?? 0).toLocaleString()}`;
@@ -23,11 +18,7 @@ function formatCurrency(val?: number) {
 export default function EmployeeDashboard() {
   const { user } = useAuth();
 
-  const todayStr = useMemo(() => {
-    const d = new Date();
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d.toISOString().split("T")[0];
-  }, []);
+  const todayStr = useMemo(() => getLocalDateString(), []);
   const [selectedDate, setSelectedDate] = useState(todayStr);
 
   const { data: res, isLoading } = useMyEarnings({ date: selectedDate });
@@ -107,13 +98,6 @@ export default function EmployeeDashboard() {
           subtitle={`${earnings?.monthServices ?? 0} services`}
           icon={TrendingUp}
           variant="success"
-        />
-        <StatCard
-          title="This Year"
-          value={formatCurrency(earnings?.yearEarnings)}
-          subtitle={`${earnings?.yearServices ?? 0} services`}
-          icon={DollarSign}
-          variant="warning"
         />
         <StatCard
           title="Today"

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { StatCard } from "@/components/shared/StatCard";
-import { cn } from "@/lib/utils";
+import { cn, getLocalDateString } from "@/lib/utils";
 import {
   useGetAll4,
   useCreate3,
@@ -119,7 +119,7 @@ export default function EmployeesPage() {
     useState<EmployeeResponse | null>(null);
   const [newPassword, setNewPassword] = useState("");
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString();
   const [selectedDate, setSelectedDate] = useState(today);
 
   // Computed Date Parts

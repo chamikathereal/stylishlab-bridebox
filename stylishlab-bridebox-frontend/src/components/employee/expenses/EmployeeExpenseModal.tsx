@@ -4,7 +4,6 @@ import {
   useGetCategories,
   useGetMyExpenses,
   useUpdate2,
-  useDelete,
 } from "@/api/generated/endpoints/expense-management/expense-management";
 import { useGetAll2 as useGetPayees } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,7 +59,7 @@ import {
 } from "@/components/ui/tooltip";
 import { PayeeRegistrationDialog } from "@/components/shared/PayeeRegistrationDialog";
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, getLocalDateString } from "@/lib/utils";
 
 interface EmployeeExpenseModalProps {
   open: boolean;
@@ -133,7 +132,6 @@ export function EmployeeExpenseModal({
 
   const recordMutation = useRecord();
   const updateMutation = useUpdate2();
-  const deleteMutation = useDelete();
 
   const categories = (catRes?.data ?? []) as ExpenseCategoryResponse[];
   const payees = (payeeRes?.data ?? []) as PayeeResponse[];
@@ -237,27 +235,10 @@ export function EmployeeExpenseModal({
     );
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this record?")) return;
-
-    deleteMutation.mutate(
-      { id },
-      {
-        onSuccess: () => {
-          toast.success("Expense deleted");
-          queryClient.invalidateQueries();
-        },
-        onError: (err: unknown) => {
-          const error = err as { response?: { data?: { message?: string } } };
-          toast.error(error.response?.data?.message || "Failed to delete");
-        },
-      },
-    );
-  };
 
   const isEditable = (dateStr?: string) => {
     if (!dateStr) return false;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateString();
     return dateStr === today;
   };
 
@@ -578,14 +559,6 @@ export function EmployeeExpenseModal({
                                         >
                                           <Pencil className="h-3.5 w-3.5" />
                                         </Button>
-                                        {/* <Button
-                                          size="icon"
-                                          variant="outline"
-                                          className="h-8 w-8 rounded-lg border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:border-destructive/50 transition-all active:scale-90"
-                                          onClick={() => handleDelete(e.id!)}
-                                        >
-                                          <Trash2 className="h-3.5 w-3.5" />
-                                        </Button> */}
                                       </>
                                     )}
                                   </div>
@@ -680,14 +653,6 @@ export function EmployeeExpenseModal({
                                   >
                                     <Pencil className="h-4 w-4" />
                                   </Button>
-                                  {/* <Button
-                                    size="icon"
-                                    variant="outline"
-                                    className="h-9 w-9 rounded-xl border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:border-destructive/50 active:scale-95 transition-all shadow-sm shadow-destructive/5"
-                                    onClick={() => handleDelete(e.id!)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button> */}
                                 </div>
                               )}
                             </div>

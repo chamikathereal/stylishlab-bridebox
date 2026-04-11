@@ -14,8 +14,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePeriodFilter } from "@/hooks/usePeriodFilter";
+import { useGetHistoryByDateRange } from '@/api/generated/endpoints/admin-payroll-management/admin-payroll-management';
 import { Input } from "@/components/ui/input";
-import React, { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
@@ -29,14 +31,24 @@ function formatCurrency(val?: number) {
 }
 
 export default function AdminDashboard() {
-  const today = new Date();
-  const todayStr = today.toLocaleDateString('en-CA');
+  const {
+    kpiPeriod: period,
+    setKpiPeriod: setPeriod,
+    selectedDate,
+    setSelectedDate,
+    selectedMonth,
+    setSelectedMonth,
+    selectedYear,
+    setSelectedYear,
+    getKpiData,
+    dateRange,
+  } = usePeriodFilter({ initialPeriod: "daily" });
 
-  // Filter state
-  const [period, setPeriod] = useState<'all' | 'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
-  const [selectedDate, setSelectedDate] = useState(todayStr);
-  const [selectedMonth, setSelectedMonth] = useState(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`);
-  const [selectedYear, setSelectedYear] = useState(today.getFullYear());
+  const { data: salaryHistoryRes, isLoading: salaryLoading } = useGetHistoryByDateRange(
+    dateRange,
+  );
+
+  const salaryHistory = useMemo(() => salaryHistoryRes?.data ?? [], [salaryHistoryRes]);
 
   // Data fetching
   const { data: dailyRes, isLoading: dailyLoading, isFetching: dailyFetching } = useDaily(
@@ -61,17 +73,19 @@ export default function AdminDashboard() {
   const { data: salesRes, isLoading: salesLoading } = useGetAll1();
 
   const report = useMemo(() => {
-    switch (period) {
-      case 'all': return totalRes?.data;
-      case 'daily': return dailyRes?.data;
-      case 'weekly': return weeklyRes?.data;
-      case 'monthly': return monthlyRes?.data;
-      case 'yearly': return yearlyRes?.data;
-      default: return dailyRes?.data;
-    }
-  }, [period, totalRes, dailyRes, weeklyRes, monthlyRes, yearlyRes]);
+    return getKpiData(
+      {
+        dailyRes,
+        weeklyRes,
+        monthlyRes,
+        yearlyRes,
+        totalRes,
+      },
+      salaryHistory,
+    );
+  }, [dailyRes, weeklyRes, monthlyRes, yearlyRes, totalRes, salaryHistory, getKpiData]);
 
-  const isLoading = dailyLoading || weeklyLoading || monthlyLoading || yearlyLoading || totalLoading;
+  const isLoading = dailyLoading || weeklyLoading || monthlyLoading || yearlyLoading || totalLoading || salaryLoading;
   const isFetching = dailyFetching || weeklyFetching || monthlyFetching || yearlyFetching || totalFetching;
   const sales = salesRes?.data ?? [];
   const recentSales = sales.slice(0, 8);
@@ -95,6 +109,8 @@ export default function AdminDashboard() {
 
   if (isLoading && !report) return <LoadingSpinner message="Loading statistics..." />;
 
+  const realizedProfit = (report as any)?.realizedProfit;
+
   return (
     <div className={cn("transition-opacity duration-300", isFetching && "opacity-60")}>
       <PageHeader title="Overview" description={`Reviewing ${period === 'daily' ? 'performance for ' + selectedDate : period + ' statistics'}`}>
@@ -114,11 +130,11 @@ export default function AdminDashboard() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <Tabs 
             value={period} 
-            onValueChange={(v: string) => setPeriod(v as 'all' | 'daily' | 'weekly' | 'monthly' | 'yearly')} 
+            onValueChange={(v: string) => setPeriod(v as any)} 
             className="w-full md:w-auto"
           >
             <TabsList className="bg-muted/50 p-1 h-11 rounded-xl">
-              <TabsTrigger value="all" className="px-5 rounded-lg text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">All Time</TabsTrigger>
+              <TabsTrigger value="total" className="px-5 rounded-lg text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">All Time</TabsTrigger>
               <TabsTrigger value="daily" className="px-5 rounded-lg text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Daily</TabsTrigger>
               <TabsTrigger value="weekly" className="px-5 rounded-lg text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Weekly</TabsTrigger>
               <TabsTrigger value="monthly" className="px-5 rounded-lg text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Monthly</TabsTrigger>
@@ -148,7 +164,7 @@ export default function AdminDashboard() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: 5 }, (_, i) => today.getFullYear() - i).map(year => (
+                  {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
                     <SelectItem key={year} value={year.toString()} className="font-medium">{year}</SelectItem>
                   ))}
                 </SelectContent>
@@ -161,10 +177,10 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title={`${period === 'all' ? 'Total' : period.charAt(0).toUpperCase() + period.slice(1)} Sales`} value={formatCurrency(report?.totalSales)} subtitle={`${report?.totalTransactions ?? 0} transactions`} icon={DollarSign} variant="primary" />
-        <StatCard title="Owner's Share" value={formatCurrency(report?.ownerRevenue)} icon={Wallet} variant="success" />
-        <StatCard title="Credit Sales" value={formatCurrency(report?.creditSales)} icon={CreditCard} variant="warning" />
-        <StatCard title="Net Profit" value={formatCurrency(report?.netProfit)} icon={TrendingUp} variant={report?.netProfit && report.netProfit > 0 ? 'primary' : 'danger'} />
+        <StatCard title="Total Sales" value={formatCurrency(report?.totalSales)} subtitle={`${report?.totalTransactions ?? 0} transactions`} icon={DollarSign} variant="primary" />
+        <StatCard title="Cash On Hand" value={formatCurrency(realizedProfit)} subtitle="Actual cash in pocket" icon={Wallet} variant={realizedProfit && realizedProfit > 0 ? 'success' : 'danger'} />
+        <StatCard title="Customer Credits" value={formatCurrency(report?.creditSales)} icon={CreditCard} variant="warning" />
+        <StatCard title="Estimated Profit" value={formatCurrency(report?.netProfit)} subtitle="Potential earnings" icon={TrendingUp} variant={report?.netProfit && report.netProfit > 0 ? 'primary' : 'danger'} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

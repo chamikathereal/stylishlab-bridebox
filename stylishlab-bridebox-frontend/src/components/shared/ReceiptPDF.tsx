@@ -97,6 +97,11 @@ const styles = StyleSheet.create({
     borderTopColor: '#eee', 
     paddingTop: 10 
   },
+  developerInfo: {
+    marginTop: 4,
+    fontSize: 7,
+    color: '#aaa',
+  }
 });
 
 export interface ReceiptPDFProps {
@@ -109,6 +114,11 @@ export function ReceiptPDF({ sale }: ReceiptPDFProps) {
     month: 'short', day: 'numeric', year: 'numeric',
     hour: '2-digit', minute: '2-digit'
   }) : '-';
+
+  const formatStatus = (status?: string) => {
+    if (!status) return '-';
+    return status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+  };
 
   return (
     <Document title={`stylish-lab-${sale.invoiceNo}`}>
@@ -166,13 +176,14 @@ export function ReceiptPDF({ sale }: ReceiptPDFProps) {
 
         <View style={styles.section}>
           <Text style={styles.label}>Payment Status</Text>
-          <Text style={styles.boldValue}>{sale.paymentStatus}</Text>
+          <Text style={styles.boldValue}>{formatStatus(sale.paymentStatus)}</Text>
           <Text style={[styles.label, { marginTop: 10 }]}>Served By</Text>
           <Text style={styles.value}>{sale.employeeName}</Text>
         </View>
 
         <View style={styles.footer}>
           <Text>Thank you for choosing Stylish Lab!</Text>
+          <Text style={styles.developerInfo}>Developed By Chamika Gayashan (+94772101809)</Text>
         </View>
       </Page>
     </Document>

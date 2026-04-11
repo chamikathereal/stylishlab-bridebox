@@ -10,6 +10,7 @@ import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.dto.SalaryTra
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.dto.SettleSalaryRequest;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.entity.Payroll;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.entity.SalaryTracker;
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.repository.AdvanceRequestRepository;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.repository.PayrollRepository;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.repository.SalaryTrackerRepository;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.user.entity.User;
@@ -32,6 +33,7 @@ public class PayrollServiceImpl implements PayrollService {
 
     private final PayrollRepository payrollRepository;
     private final SalaryTrackerRepository trackerRepository;
+    private final AdvanceRequestRepository advanceRequestRepository;
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
 
@@ -71,9 +73,14 @@ public class PayrollServiceImpl implements PayrollService {
         LocalDateTime endOfMonth = YearMonth.now().atEndOfMonth().atTime(LocalTime.MAX);
         
         List<Payroll> monthPayrolls = payrollRepository.findBySettledAtBetween(startOfMonth, endOfMonth);
-        BigDecimal totalPaidThisMonth = monthPayrolls.stream()
+        BigDecimal totalSettledSalaries = monthPayrolls.stream()
                 .map(Payroll::getNetPaid)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Include advances paid in this month
+        BigDecimal totalAdvancesThisMonth = advanceRequestRepository.sumApprovedAdvancesBetween(startOfMonth, endOfMonth);
+        
+        BigDecimal totalPaidThisMonth = totalSettledSalaries.add(totalAdvancesThisMonth);
 
         BigDecimal netPending = (totalPending != null ? totalPending : BigDecimal.ZERO)
                 .subtract(totalAdvances != null ? totalAdvances : BigDecimal.ZERO);

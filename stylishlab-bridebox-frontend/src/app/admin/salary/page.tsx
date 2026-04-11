@@ -560,7 +560,7 @@ export default function AdminSalaryPage() {
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              disabled={settleMutation.isPending}
+              disabled={settleMutation.isPending || (selectedTracker?.netPayable ?? 0) <= 0}
               onClick={handleSettleSubmit}
             >
               Confirm & Settle

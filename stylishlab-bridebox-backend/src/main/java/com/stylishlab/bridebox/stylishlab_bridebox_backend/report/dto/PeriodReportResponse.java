@@ -15,7 +15,9 @@ public class PeriodReportResponse {
     private BigDecimal employeeCommissions;
     private BigDecimal totalExpenses;
     private BigDecimal totalBills;
+    private BigDecimal totalSalariesPaid;
     private BigDecimal ownerRevenue;
     private BigDecimal netProfit;
+    private BigDecimal realizedProfit;
     private Long totalTransactions;
 }

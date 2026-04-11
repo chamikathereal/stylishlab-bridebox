@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, getLocalDateString } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -157,7 +157,7 @@ export default function SalesPage() {
   const [kpiPeriod, setKpiPeriod] = useState<
     "daily" | "weekly" | "monthly" | "yearly" | "total"
   >("monthly");
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString();
   const [selectedDate, setSelectedDate] = useState(today);
   const selectedMonth = selectedDate.substring(0, 7); // YYYY-MM
   const selectedYear = parseInt(selectedDate.substring(0, 4));
