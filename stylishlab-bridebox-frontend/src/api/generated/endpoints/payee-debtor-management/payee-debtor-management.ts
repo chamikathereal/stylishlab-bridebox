@@ -26,6 +26,7 @@ import type {
 
 import type {
   ApiResponseListPayeeResponse,
+  ApiResponseListPayeeTypeResponse,
   ApiResponsePayeeResponse,
   ApiResponseVoid,
   CreatePayeeRequest,
@@ -411,4 +412,94 @@ export const useToggleStatus1 = <TError = ErrorType<unknown>,
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * @summary Get all payee classifications
+ */
+export const getTypes = (
     
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ApiResponseListPayeeTypeResponse>(
+      {url: `/api/payees/types`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetTypesQueryKey = () => {
+    return [
+    `/api/payees/types`
+    ] as const;
+    }
+
+    
+export const getGetTypesQueryOptions = <TData = Awaited<ReturnType<typeof getTypes>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTypes>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTypesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTypes>>> = ({ signal }) => getTypes(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTypesQueryResult = NonNullable<Awaited<ReturnType<typeof getTypes>>>
+export type GetTypesQueryError = ErrorType<unknown>
+
+
+export function useGetTypes<TData = Awaited<ReturnType<typeof getTypes>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTypes>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTypes>>,
+          TError,
+          Awaited<ReturnType<typeof getTypes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTypes<TData = Awaited<ReturnType<typeof getTypes>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTypes>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTypes>>,
+          TError,
+          Awaited<ReturnType<typeof getTypes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTypes<TData = Awaited<ReturnType<typeof getTypes>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTypes>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get all payee classifications
+ */
+
+export function useGetTypes<TData = Awaited<ReturnType<typeof getTypes>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTypes>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTypesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+

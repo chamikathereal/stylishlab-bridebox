@@ -21,4 +21,10 @@ public interface SalaryTrackerRepository extends JpaRepository<SalaryTracker, Lo
 
     @Query("SELECT COUNT(s) FROM SalaryTracker s WHERE s.currentSalary > 0")
     long countPendingPayments();
+
+    @Query("SELECT s FROM SalaryTracker s WHERE " +
+           "(:search IS NULL OR LOWER(s.employee.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
+    org.springframework.data.domain.Page<SalaryTracker> findAllWithSearch(
+            @org.springframework.data.repository.query.Param("search") String search,
+            org.springframework.data.domain.Pageable pageable);
 }

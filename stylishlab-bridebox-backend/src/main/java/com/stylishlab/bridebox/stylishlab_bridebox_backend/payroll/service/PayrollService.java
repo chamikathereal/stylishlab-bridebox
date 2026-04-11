@@ -15,7 +15,7 @@ public interface PayrollService {
     void addCommissionToTracker(Long employeeId, BigDecimal amount);
     
     SalaryTrackerResponse getTrackerByEmployee(Long employeeId);
-    List<SalaryTrackerResponse> getAllTrackers();
+    org.springframework.data.domain.Page<SalaryTrackerResponse> getAllTrackers(String search, org.springframework.data.domain.Pageable pageable);
     
     AdminPayrollStatsResponse getAdminStats();
 
@@ -25,5 +25,7 @@ public interface PayrollService {
     // Historical payroll
     List<PayrollResponse> getPayrollHistoryByEmployee(Long employeeId);
     List<PayrollResponse> getPayrollHistoryByDateRange(LocalDate from, LocalDate to);
-    List<PayrollResponse> getAllPayrollHistory();
+    org.springframework.data.domain.Page<PayrollResponse> getAllPayrollHistory(
+            String search, java.time.LocalDateTime fromDate, java.time.LocalDateTime toDate,
+            org.springframework.data.domain.Pageable pageable);
 }

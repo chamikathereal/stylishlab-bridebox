@@ -5,11 +5,11 @@
  * API for managing salon services, employees, customers, sales, expenses, and reports
  * OpenAPI spec version: 1.0.0
  */
-import type { SalaryTrackerResponse } from './salaryTrackerResponse';
+import type { PageSaleResponse } from './pageSaleResponse';
 
-export interface ApiResponseListSalaryTrackerResponse {
+export interface ApiResponsePageSaleResponse {
   success?: boolean;
   message?: string;
-  data?: SalaryTrackerResponse[];
+  data?: PageSaleResponse;
   timestamp?: string;
 }

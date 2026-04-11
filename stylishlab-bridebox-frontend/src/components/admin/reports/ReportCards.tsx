@@ -30,11 +30,11 @@ export function ReportCards({ report, formatCurrency }: ReportCardsProps) {
       />
       <StatCard
         title="Cash On Hand"
-        value={formatCurrency((report as any).realizedProfit)}
+        value={formatCurrency(report.realizedProfit)}
         subtitle="Received - (Paid Salaries + Expenses + Bills)"
         icon={Wallet}
         variant={
-          (report as any).realizedProfit && (report as any).realizedProfit > 0
+          report.realizedProfit && report.realizedProfit > 0
             ? "success"
             : "danger"
         }
@@ -64,7 +64,7 @@ export function ReportCards({ report, formatCurrency }: ReportCardsProps) {
 
       <StatCard
         title="Salaries Settled"
-        value={formatCurrency((report as any).totalSalariesPaid)}
+        value={formatCurrency(report.totalSalariesPaid)}
         subtitle="Actual money paid to employees"
         icon={Wallet}
         variant="success"

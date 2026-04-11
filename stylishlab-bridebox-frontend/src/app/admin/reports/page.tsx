@@ -35,13 +35,15 @@ export default function ReportsPage() {
     getKpiData,
     dateRange,
     reset,
-  } = usePeriodFilter({ initialPeriod: "total" });
+  } = usePeriodFilter({ initialPeriod: "daily" });
 
-  const { data: salaryHistoryRes, isLoading: salaryLoading } = useGetHistoryByDateRange(
-    dateRange,
+  const { data: salaryHistoryRes, isLoading: salaryLoading } =
+    useGetHistoryByDateRange(dateRange);
+
+  const salaryHistory = useMemo(
+    () => salaryHistoryRes?.data ?? [],
+    [salaryHistoryRes],
   );
-
-  const salaryHistory = useMemo(() => salaryHistoryRes?.data ?? [], [salaryHistoryRes]);
 
   const { data: dailyRes, isLoading: dailyLoading } = useDaily(
     { date: selectedDate },
@@ -77,7 +79,7 @@ export default function ReportsPage() {
         totalRes,
       },
       salaryHistory,
-    ) as PeriodReportResponse | undefined;
+    );
   }, [
     dailyRes,
     weeklyRes,
@@ -132,7 +134,10 @@ export default function ReportsPage() {
             </div>
           ) : (
             <>
-              <ReportCards report={activeReport} formatCurrency={formatCurrency} />
+              <ReportCards
+                report={activeReport}
+                formatCurrency={formatCurrency}
+              />
               <ReportChart
                 report={activeReport}
                 formatCurrency={formatCurrency}

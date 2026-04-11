@@ -12,6 +12,15 @@ import java.util.List;
 public interface MonthlyBillRepository extends JpaRepository<MonthlyBill, Long> {
     List<MonthlyBill> findByBillMonth(String billMonth);
 
+    @Query("SELECT b FROM MonthlyBill b WHERE " +
+           "(:search IS NULL OR LOWER(b.billType) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.billMonth) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(CAST(b.status AS string)) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.note) LIKE LOWER(CONCAT('%', :search, '%')))")
+    org.springframework.data.domain.Page<MonthlyBill> findAllWithSearch(
+            @Param("search") String search,
+            org.springframework.data.domain.Pageable pageable);
+
     @Query("SELECT COALESCE(SUM(b.amount), 0) FROM MonthlyBill b WHERE b.billMonth = :month")
     BigDecimal sumBillsByMonth(@Param("month") String month);
 
@@ -20,4 +29,7 @@ public interface MonthlyBillRepository extends JpaRepository<MonthlyBill, Long> 
 
     @Query("SELECT COALESCE(SUM(b.amount), 0) FROM MonthlyBill b")
     BigDecimal sumAllBills();
+
+    @Query("SELECT COALESCE(SUM(b.amount), 0) FROM MonthlyBill b WHERE b.status = 'PAID'")
+    BigDecimal sumPaidBillsTotal();
 }

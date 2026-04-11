@@ -14,7 +14,9 @@ export interface PeriodReportResponse {
   employeeCommissions?: number;
   totalExpenses?: number;
   totalBills?: number;
+  totalSalariesPaid?: number;
   ownerRevenue?: number;
   netProfit?: number;
+  realizedProfit?: number;
   totalTransactions?: number;
 }

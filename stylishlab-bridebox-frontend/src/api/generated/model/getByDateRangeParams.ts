@@ -9,4 +9,8 @@
 export type GetByDateRangeParams = {
 from: string;
 to: string;
+search?: string;
+page?: number;
+size?: number;
+sort?: string;
 };

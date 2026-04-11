@@ -11,6 +11,8 @@ import com.stylishlab.bridebox.stylishlab_bridebox_backend.payee.repository.Paye
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.user.entity.User;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -52,13 +54,13 @@ public class ExpenseService {
         return toResponse(expenseRepository.save(expense));
     }
 
-    public List<ExpenseResponse> getAll() {
-        return expenseRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
+    public Page<ExpenseResponse> getAll(String search, Pageable pageable) {
+        return expenseRepository.findAllWithSearch(search, pageable).map(this::toResponse);
     }
 
-    public List<ExpenseResponse> getByDateRange(LocalDate from, LocalDate to) {
-        return expenseRepository.findByExpenseDateBetween(from, to).stream()
-                .map(this::toResponse).collect(Collectors.toList());
+    public Page<ExpenseResponse> getByDateRange(LocalDate from, LocalDate to, String search, Pageable pageable) {
+        return expenseRepository.findByDateRangeWithSearch(from, to, search, pageable)
+                .map(this::toResponse);
     }
 
     public List<ExpenseCategoryResponse> getCategories() {

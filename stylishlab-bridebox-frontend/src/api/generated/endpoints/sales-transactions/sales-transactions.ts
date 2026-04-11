@@ -26,8 +26,10 @@ import type {
 
 import type {
   ApiResponseListSaleResponse,
+  ApiResponsePageSaleResponse,
   ApiResponseSaleResponse,
   CreateSaleRequest,
+  GetAll1Params,
   GetByDateRangeParams
 } from '../../model';
 
@@ -43,13 +45,14 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary Get all sales
  */
 export const getAll1 = (
-    
+    params?: GetAll1Params,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
       
-      return customInstance<ApiResponseListSaleResponse>(
-      {url: `/api/sales`, method: 'GET', signal
+      return customInstance<ApiResponsePageSaleResponse>(
+      {url: `/api/sales`, method: 'GET',
+        params, signal
     },
       options);
     }
@@ -57,23 +60,23 @@ export const getAll1 = (
 
 
 
-export const getGetAll1QueryKey = () => {
+export const getGetAll1QueryKey = (params?: GetAll1Params,) => {
     return [
-    `/api/sales`
+    `/api/sales`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAll1QueryOptions = <TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetAll1QueryOptions = <TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(params?: GetAll1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAll1QueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAll1QueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAll1>>> = ({ signal }) => getAll1(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAll1>>> = ({ signal }) => getAll1(params, requestOptions, signal);
 
       
 
@@ -87,7 +90,7 @@ export type GetAll1QueryError = ErrorType<unknown>
 
 
 export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>> & Pick<
+ params: undefined |  GetAll1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAll1>>,
           TError,
@@ -97,7 +100,7 @@ export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError =
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>> & Pick<
+ params?: GetAll1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAll1>>,
           TError,
@@ -107,7 +110,7 @@ export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError =
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAll1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -115,11 +118,11 @@ export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError =
  */
 
 export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAll1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAll1QueryOptions(options)
+  const queryOptions = getGetAll1QueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -386,7 +389,7 @@ export const getByDateRange = (
 ) => {
       
       
-      return customInstance<ApiResponseListSaleResponse>(
+      return customInstance<ApiResponsePageSaleResponse>(
       {url: `/api/sales/date-range`, method: 'GET',
         params, signal
     },

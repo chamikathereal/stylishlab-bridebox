@@ -35,9 +35,11 @@ public class PayrollAdminController {
     }
 
     @GetMapping("/trackers")
-    @Operation(summary = "Get all employee live salary trackers")
-    public ResponseEntity<ApiResponse<List<SalaryTrackerResponse>>> getAllTrackers() {
-        return ResponseEntity.ok(ApiResponse.ok(payrollService.getAllTrackers()));
+    @Operation(summary = "Get all employee live salary trackers with pagination")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<SalaryTrackerResponse>>> getAllTrackers(
+            @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(ApiResponse.ok(payrollService.getAllTrackers(search, pageable)));
     }
 
     // --- Settlement ---
@@ -52,9 +54,17 @@ public class PayrollAdminController {
     // --- Payroll History ---
 
     @GetMapping("/history")
-    @Operation(summary = "Get all payroll history")
-    public ResponseEntity<ApiResponse<List<PayrollResponse>>> getAllHistory() {
-        return ResponseEntity.ok(ApiResponse.ok(payrollService.getAllPayrollHistory()));
+    @Operation(summary = "Get all payroll history with pagination and filters")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<PayrollResponse>>> getAllHistory(
+            @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+        return ResponseEntity.ok(ApiResponse.ok(payrollService.getAllPayrollHistory(
+                search,
+                fromDate != null ? fromDate.atStartOfDay() : null,
+                toDate != null ? toDate.atTime(java.time.LocalTime.MAX) : null,
+                pageable)));
     }
 
     @GetMapping("/history/employee/{employeeId}")
@@ -74,9 +84,18 @@ public class PayrollAdminController {
     // --- Advance Requests ---
 
     @GetMapping("/advances")
-    @Operation(summary = "Get all advance requests")
-    public ResponseEntity<ApiResponse<List<AdvanceRequestResponse>>> getAllAdvances() {
-        return ResponseEntity.ok(ApiResponse.ok(advanceService.getAllRequests()));
+    @Operation(summary = "Get all advance requests with pagination and filters")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<AdvanceRequestResponse>>> getAllAdvances(
+            @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) AdvanceStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+        return ResponseEntity.ok(ApiResponse.ok(advanceService.getAllRequests(
+                search, status,
+                fromDate != null ? fromDate.atStartOfDay() : null,
+                toDate != null ? toDate.atTime(java.time.LocalTime.MAX) : null,
+                pageable)));
     }
 
     @GetMapping("/advances/status/{status}")

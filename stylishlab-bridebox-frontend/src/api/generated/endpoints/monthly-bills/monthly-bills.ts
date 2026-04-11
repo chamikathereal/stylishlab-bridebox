@@ -27,7 +27,10 @@ import type {
 import type {
   ApiResponseBillResponse,
   ApiResponseListBillResponse,
-  CreateBillRequest
+  ApiResponsePageBillResponse,
+  ApiResponseVoid,
+  CreateBillRequest,
+  GetAll6Params
 } from '../../model';
 
 import { customInstance } from '../../../axios-instance';
@@ -194,16 +197,78 @@ export const useUpdate5 = <TError = ErrorType<unknown>,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * @summary Get all bills
+ * @summary Delete bill
+ */
+export const delete1 = (
+    id: number,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<ApiResponseVoid>(
+      {url: `/api/bills/${id}`, method: 'DELETE'
+    },
+      options);
+    }
+  
+
+
+export const getDelete1MutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof delete1>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof delete1>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['delete1'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof delete1>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  delete1(id,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type Delete1MutationResult = NonNullable<Awaited<ReturnType<typeof delete1>>>
+    
+    export type Delete1MutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete bill
+ */
+export const useDelete1 = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof delete1>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof delete1>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+
+      const mutationOptions = getDelete1MutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Get all bills with pagination
  */
 export const getAll6 = (
-    
+    params?: GetAll6Params,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
       
-      return customInstance<ApiResponseListBillResponse>(
-      {url: `/api/bills`, method: 'GET', signal
+      return customInstance<ApiResponsePageBillResponse>(
+      {url: `/api/bills`, method: 'GET',
+        params, signal
     },
       options);
     }
@@ -211,23 +276,23 @@ export const getAll6 = (
 
 
 
-export const getGetAll6QueryKey = () => {
+export const getGetAll6QueryKey = (params?: GetAll6Params,) => {
     return [
-    `/api/bills`
+    `/api/bills`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAll6QueryOptions = <TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetAll6QueryOptions = <TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(params?: GetAll6Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAll6QueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAll6QueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAll6>>> = ({ signal }) => getAll6(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAll6>>> = ({ signal }) => getAll6(params, requestOptions, signal);
 
       
 
@@ -241,7 +306,7 @@ export type GetAll6QueryError = ErrorType<unknown>
 
 
 export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>> & Pick<
+ params: undefined |  GetAll6Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAll6>>,
           TError,
@@ -251,7 +316,7 @@ export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError =
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>> & Pick<
+ params?: GetAll6Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAll6>>,
           TError,
@@ -261,19 +326,19 @@ export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError =
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAll6Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get all bills
+ * @summary Get all bills with pagination
  */
 
 export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAll6Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAll6QueryOptions(options)
+  const queryOptions = getGetAll6QueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

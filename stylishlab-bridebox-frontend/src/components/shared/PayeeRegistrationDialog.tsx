@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import {
   useCreate2,
   useUpdate1,
+  useGetTypes,
 } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +37,10 @@ export function PayeeRegistrationDialog({
 }: PayeeRegistrationDialogProps) {
   const createMutation = useCreate2();
   const updateMutation = useUpdate1();
+  const { data: typesRes, isLoading: isTypesLoading } = useGetTypes();
   const queryClient = useQueryClient();
+
+  const payeeTypes = typesRes?.data ?? [];
 
   const [form, setForm] = useState<{
     name: string;
@@ -155,14 +159,19 @@ export function PayeeRegistrationDialog({
                 Classification *
               </Label>
               <select
-                className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all disabled:opacity-50"
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
+                disabled={isTypesLoading}
               >
-                <option value="">Select Category</option>
-                <option value="SUPPLIER">Supplier</option>
-                <option value="BANK">Bank</option>
-                <option value="OTHER">Other Management</option>
+                <option value="">
+                  {isTypesLoading ? "Loading Categories..." : "Select Category"}
+                </option>
+                {payeeTypes.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.displayName}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -198,16 +207,16 @@ export function PayeeRegistrationDialog({
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="flex sm:flex-row flex-col-reverse gap-2 pt-2">
           <Button
             variant="outline"
-            className="flex-1"
+            className="h-11 sm:flex-1 w-full font-semibold border-muted/20 hover:bg-muted/50 transition-all"
             onClick={() => onOpenChange(false)}
           >
             Cancel
           </Button>
           <Button
-            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="h-11 sm:flex-1 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-lg shadow-emerald-500/20 transition-all"
             onClick={handleSubmit}
             disabled={createMutation.isPending || updateMutation.isPending}
           >

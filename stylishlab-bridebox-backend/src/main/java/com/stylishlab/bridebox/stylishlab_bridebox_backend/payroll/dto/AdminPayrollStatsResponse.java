@@ -12,4 +12,5 @@ public class AdminPayrollStatsResponse {
     private BigDecimal totalPaidThisMonth;
     private BigDecimal totalAdvancesGiven;
     private long employeesPendingPaymentCount;
+    private long pendingAdvanceRequestsCount;
 }

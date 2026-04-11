@@ -1,5 +1,6 @@
 package com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.service;
 
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.enums.AdvanceStatus;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.exception.BadRequestException;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.exception.ResourceNotFoundException;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.employee.entity.Employee;
@@ -57,10 +58,9 @@ public class PayrollServiceImpl implements PayrollService {
     }
 
     @Override
-    public List<SalaryTrackerResponse> getAllTrackers() {
-        return trackerRepository.findAll().stream()
-                .map(this::toTrackerResponse)
-                .collect(Collectors.toList());
+    public org.springframework.data.domain.Page<SalaryTrackerResponse> getAllTrackers(String search, org.springframework.data.domain.Pageable pageable) {
+        return trackerRepository.findAllWithSearch(search, pageable)
+                .map(this::toTrackerResponse);
     }
 
     @Override
@@ -85,11 +85,14 @@ public class PayrollServiceImpl implements PayrollService {
         BigDecimal netPending = (totalPending != null ? totalPending : BigDecimal.ZERO)
                 .subtract(totalAdvances != null ? totalAdvances : BigDecimal.ZERO);
 
+        long pendingAdvancesCount = advanceRequestRepository.countByStatus(AdvanceStatus.PENDING);
+
         return AdminPayrollStatsResponse.builder()
                 .totalPendingSalary(netPending)
                 .totalPaidThisMonth(totalPaidThisMonth)
                 .totalAdvancesGiven(totalAdvances != null ? totalAdvances : BigDecimal.ZERO)
                 .employeesPendingPaymentCount(pendingCount)
+                .pendingAdvanceRequestsCount(pendingAdvancesCount)
                 .build();
     }
 
@@ -145,10 +148,11 @@ public class PayrollServiceImpl implements PayrollService {
     }
 
     @Override
-    public List<PayrollResponse> getAllPayrollHistory() {
-        return payrollRepository.findAll().stream()
-                .map(this::toPayrollResponse)
-                .collect(Collectors.toList());
+    public org.springframework.data.domain.Page<PayrollResponse> getAllPayrollHistory(
+            String search, LocalDateTime fromDate, LocalDateTime toDate,
+            org.springframework.data.domain.Pageable pageable) {
+        return payrollRepository.findAllWithFilters(search, fromDate, toDate, pageable)
+                .map(this::toPayrollResponse);
     }
 
     private SalaryTracker createDefaultTracker(Long employeeId) {

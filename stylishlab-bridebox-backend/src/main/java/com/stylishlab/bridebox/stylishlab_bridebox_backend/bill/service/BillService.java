@@ -40,6 +40,10 @@ public class BillService {
         return repository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    public org.springframework.data.domain.Page<BillResponse> getAllPaginated(String search, org.springframework.data.domain.Pageable pageable) {
+        return repository.findAllWithSearch(search, pageable).map(this::toResponse);
+    }
+
     public List<BillResponse> getByMonth(String yearMonth) {
         return repository.findByBillMonth(yearMonth).stream()
                 .map(this::toResponse).collect(Collectors.toList());
@@ -66,6 +70,13 @@ public class BillService {
         }
         if (request.getNote() != null) bill.setNote(request.getNote());
         return toResponse(repository.save(bill));
+    }
+
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Bill", "id", id);
+        }
+        repository.deleteById(id);
     }
 
     private BillResponse toResponse(MonthlyBill b) {

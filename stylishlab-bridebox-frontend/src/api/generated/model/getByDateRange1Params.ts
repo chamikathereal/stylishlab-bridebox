@@ -5,8 +5,11 @@
  * API for managing salon services, employees, customers, sales, expenses, and reports
  * OpenAPI spec version: 1.0.0
  */
+import type { Pageable } from './pageable';
 
 export type GetByDateRange1Params = {
 from: string;
 to: string;
+search?: string;
+pageable: Pageable;
 };

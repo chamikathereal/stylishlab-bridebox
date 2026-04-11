@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +35,10 @@ public class ExpenseController {
 
     @GetMapping
     @Operation(summary = "Get all expenses")
-    public ResponseEntity<ApiResponse<List<ExpenseResponse>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.ok(expenseService.getAll()));
+    public ResponseEntity<ApiResponse<Page<ExpenseResponse>>> getAll(
+            @RequestParam(required = false) String search,
+            Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.ok(expenseService.getAll(search, pageable)));
     }
 
     @GetMapping("/categories")
@@ -67,9 +71,11 @@ public class ExpenseController {
 
     @GetMapping("/date-range")
     @Operation(summary = "Get expenses by date range")
-    public ResponseEntity<ApiResponse<List<ExpenseResponse>>> getByDateRange(
+    public ResponseEntity<ApiResponse<Page<ExpenseResponse>>> getByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return ResponseEntity.ok(ApiResponse.ok(expenseService.getByDateRange(from, to)));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String search,
+            Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.ok(expenseService.getByDateRange(from, to, search, pageable)));
     }
 }

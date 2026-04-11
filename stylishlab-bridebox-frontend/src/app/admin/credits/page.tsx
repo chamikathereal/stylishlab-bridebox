@@ -67,8 +67,8 @@ export default function CreditsPage() {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
 
-  const pending = (pendingRes?.data ?? []) as CustomerCreditSummaryResponse[];
-  const allSales = (salesRes?.data ?? []) as SaleResponse[];
+  const pending: CustomerCreditSummaryResponse[] = pendingRes?.data ?? [];
+  const allSales: SaleResponse[] = salesRes?.data?.content ?? [];
   const creditSales = allSales.filter(
     (s) =>
       (s.paymentStatus === "CREDIT" || s.paymentStatus === "PARTIAL") &&

@@ -11,19 +11,36 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { FileText, Calendar, CheckCircle, Check } from "lucide-react";
+import { FileText, Calendar, CheckCircle, Check, Pencil, Trash2 } from "lucide-react";
 import { BillResponse } from "@/api/generated/model";
+import { TablePagination } from "@/components/shared/TablePagination";
 
 interface BillLedgerProps {
   bills: BillResponse[];
   formatCurrency: (val?: number) => string;
   onSettle: (id: number) => void;
+  onEdit: (bill: BillResponse) => void;
+  onDelete: (id: number) => void;
+  currentPage: number;
+  setCurrentPage: (page: number | ((p: number) => number)) => void;
+  itemsPerPage: number;
+  setItemsPerPage: (size: number) => void;
+  totalElements: number;
+  totalPages: number;
 }
 
 export function BillLedger({
   bills,
   formatCurrency,
   onSettle,
+  onEdit,
+  onDelete,
+  currentPage,
+  setCurrentPage,
+  itemsPerPage,
+  setItemsPerPage,
+  totalElements,
+  totalPages,
 }: BillLedgerProps) {
   return (
     <Card className="glass-card overflow-hidden">
@@ -121,16 +138,34 @@ export function BillLedger({
                     {b.note || "-"}
                   </TableCell>
                   <TableCell className="px-8 py-5 text-right">
-                    {b.status !== "PAID" && (
+                    <div className="flex items-center justify-end gap-2">
+                      {b.status !== "PAID" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 gap-1.5 text-[10px] font-bold uppercase tracking-wider border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all"
+                          onClick={() => onSettle(b.id!)}
+                        >
+                          <Check className="w-3 h-3" /> Settle
+                        </Button>
+                      )}
                       <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 gap-1.5 text-[10px] font-bold uppercase tracking-wider border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all"
-                        onClick={() => onSettle(b.id!)}
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                        onClick={() => onEdit(b)}
                       >
-                        <Check className="w-3 h-3" /> Settle
+                        <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                    )}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-destructive hover:bg-destructive/5"
+                        onClick={() => onDelete(b.id!)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -151,6 +186,14 @@ export function BillLedger({
             )}
           </TableBody>
         </Table>
+        <TablePagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          setItemsPerPage={setItemsPerPage}
+          totalElements={totalElements}
+          totalPages={totalPages}
+        />
       </CardContent>
     </Card>
   );

@@ -10,6 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,8 +37,13 @@ public class SaleController {
 
     @GetMapping
     @Operation(summary = "Get all sales")
-    public ResponseEntity<ApiResponse<List<SaleResponse>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.ok(saleService.getAll()));
+    public ResponseEntity<ApiResponse<Page<SaleResponse>>> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+        Pageable pageable = createPageable(page, size, sort);
+        return ResponseEntity.ok(ApiResponse.ok(saleService.getAll(search, pageable)));
     }
 
     @GetMapping("/{id}")
@@ -57,9 +66,21 @@ public class SaleController {
 
     @GetMapping("/date-range")
     @Operation(summary = "Get sales by date range")
-    public ResponseEntity<ApiResponse<List<SaleResponse>>> getByDateRange(
+    public ResponseEntity<ApiResponse<Page<SaleResponse>>> getByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return ResponseEntity.ok(ApiResponse.ok(saleService.getByDateRange(from, to)));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+        Pageable pageable = createPageable(page, size, sort);
+        return ResponseEntity.ok(ApiResponse.ok(saleService.getByDateRange(from, to, search, pageable)));
+    }
+
+    private Pageable createPageable(int page, int size, String sort) {
+        String[] sortParams = sort.split(",");
+        Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
+        return PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
     }
 }

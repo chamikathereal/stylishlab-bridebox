@@ -100,6 +100,7 @@ public class ReportService {
         BigDecimal ownerRevenue = saleRepository.sumOwnerAmount();
         BigDecimal totalExpenses = expenseRepository.sumAllExpenses();
         BigDecimal totalBills = billRepository.sumAllBills();
+        BigDecimal totalPaidBills = billRepository.sumPaidBillsTotal();
 
         // New: Include salaries and advances in totals
         BigDecimal totalSalariesPaid = payrollRepository.sumAllNetPaid()
@@ -115,7 +116,7 @@ public class ReportService {
         BigDecimal realizedProfit = (cashReceived != null ? cashReceived : BigDecimal.ZERO)
                 .subtract(totalSalariesPaid)
                 .subtract(totalExpenses)
-                .subtract(totalBills);
+                .subtract(totalPaidBills);
 
         return PeriodReportResponse.builder()
                 .period("Total")
@@ -183,7 +184,7 @@ public class ReportService {
         BigDecimal employeeCommissions = saleRepository.sumEmployeeAmountBetween(from, to);
         BigDecimal ownerRevenue = saleRepository.sumOwnerAmountBetween(from, to);
         BigDecimal totalExpenses = expenseRepository.sumExpensesBetween(expFrom, expTo);
-        BigDecimal totalBills = billRepository.sumBillsPaidBetween(expFrom, expTo);
+        BigDecimal totalBillsPaid = billRepository.sumBillsPaidBetween(expFrom, expTo);
 
         BigDecimal totalSalariesPaid = payrollRepository.sumNetPaidBetween(from, to)
                 .add(advanceRepository.sumApprovedAdvancesBetween(from, to));
@@ -191,11 +192,13 @@ public class ReportService {
         // Employee Commissions Debt = Total Earned - Already Paid
         BigDecimal outstandingCommissions = employeeCommissions.subtract(totalSalariesPaid);
 
-        BigDecimal netProfit = ownerRevenue.subtract(totalExpenses).subtract(totalBills);
+        // For netProfit in arbitrary ranges, we currently use paid bills as an approximation 
+        // unless overridden in monthly/yearly reports where we can sum by the month string
+        BigDecimal netProfit = ownerRevenue.subtract(totalExpenses).subtract(totalBillsPaid);
         BigDecimal realizedProfit = cashReceived
                 .subtract(totalSalariesPaid)
                 .subtract(totalExpenses)
-                .subtract(totalBills);
+                .subtract(totalBillsPaid);
 
         return PeriodReportResponse.builder()
                 .period(period)
@@ -206,7 +209,7 @@ public class ReportService {
                 .employeeCommissions(outstandingCommissions)
                 .totalSalariesPaid(totalSalariesPaid)
                 .totalExpenses(totalExpenses)
-                .totalBills(totalBills)
+                .totalBills(totalBillsPaid)
                 .ownerRevenue(ownerRevenue)
                 .netProfit(netProfit)
                 .realizedProfit(realizedProfit)

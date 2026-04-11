@@ -28,8 +28,10 @@ import type {
   ApiResponseExpenseResponse,
   ApiResponseListExpenseCategoryResponse,
   ApiResponseListExpenseResponse,
+  ApiResponsePageExpenseResponse,
   ApiResponseVoid,
   CreateExpenseRequest,
+  GetAll3Params,
   GetByDateRange1Params,
   UpdateExpenseRequest
 } from '../../model';
@@ -173,13 +175,14 @@ export const useDelete = <TError = ErrorType<unknown>,
  * @summary Get all expenses
  */
 export const getAll3 = (
-    
+    params: GetAll3Params,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
       
-      return customInstance<ApiResponseListExpenseResponse>(
-      {url: `/api/expenses`, method: 'GET', signal
+      return customInstance<ApiResponsePageExpenseResponse>(
+      {url: `/api/expenses`, method: 'GET',
+        params, signal
     },
       options);
     }
@@ -187,23 +190,23 @@ export const getAll3 = (
 
 
 
-export const getGetAll3QueryKey = () => {
+export const getGetAll3QueryKey = (params?: GetAll3Params,) => {
     return [
-    `/api/expenses`
+    `/api/expenses`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAll3QueryOptions = <TData = Awaited<ReturnType<typeof getAll3>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetAll3QueryOptions = <TData = Awaited<ReturnType<typeof getAll3>>, TError = ErrorType<unknown>>(params: GetAll3Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAll3QueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAll3QueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAll3>>> = ({ signal }) => getAll3(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAll3>>> = ({ signal }) => getAll3(params, requestOptions, signal);
 
       
 
@@ -217,7 +220,7 @@ export type GetAll3QueryError = ErrorType<unknown>
 
 
 export function useGetAll3<TData = Awaited<ReturnType<typeof getAll3>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>> & Pick<
+ params: GetAll3Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAll3>>,
           TError,
@@ -227,7 +230,7 @@ export function useGetAll3<TData = Awaited<ReturnType<typeof getAll3>>, TError =
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAll3<TData = Awaited<ReturnType<typeof getAll3>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>> & Pick<
+ params: GetAll3Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAll3>>,
           TError,
@@ -237,7 +240,7 @@ export function useGetAll3<TData = Awaited<ReturnType<typeof getAll3>>, TError =
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAll3<TData = Awaited<ReturnType<typeof getAll3>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params: GetAll3Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -245,11 +248,11 @@ export function useGetAll3<TData = Awaited<ReturnType<typeof getAll3>>, TError =
  */
 
 export function useGetAll3<TData = Awaited<ReturnType<typeof getAll3>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params: GetAll3Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll3>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAll3QueryOptions(options)
+  const queryOptions = getGetAll3QueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -425,7 +428,7 @@ export const getByDateRange1 = (
 ) => {
       
       
-      return customInstance<ApiResponseListExpenseResponse>(
+      return customInstance<ApiResponsePageExpenseResponse>(
       {url: `/api/expenses/date-range`, method: 'GET',
         params, signal
     },

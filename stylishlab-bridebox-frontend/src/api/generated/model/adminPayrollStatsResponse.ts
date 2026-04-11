@@ -11,4 +11,5 @@ export interface AdminPayrollStatsResponse {
   totalPaidThisMonth?: number;
   totalAdvancesGiven?: number;
   employeesPendingPaymentCount?: number;
+  pendingAdvanceRequestsCount?: number;
 }

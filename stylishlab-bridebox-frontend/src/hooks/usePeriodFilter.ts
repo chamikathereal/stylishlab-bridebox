@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { getLocalDateString } from "@/lib/utils";
+import { PeriodReportResponse, PayrollResponse } from "@/api/generated/model";
 
 export type PeriodType = "daily" | "weekly" | "monthly" | "yearly" | "total";
 
@@ -100,7 +101,7 @@ export function usePeriodFilter(options: UsePeriodFilterOptions = {}) {
   }, [kpiPeriod, selectedDate, selectedMonth, selectedYear]);
 
   const getKpiData = useCallback(
-    <T extends Record<string, any>>(
+    <T extends { totalSalariesPaid?: number; realizedProfit?: number } = PeriodReportResponse>(
       responses: {
         dailyRes?: { data?: T };
         weeklyRes?: { data?: T };
@@ -108,7 +109,8 @@ export function usePeriodFilter(options: UsePeriodFilterOptions = {}) {
         yearlyRes?: { data?: T };
         totalRes?: { data?: T };
       },
-      salaryHistory: any[] = [],
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _salaryHistory: PayrollResponse[] = [],
     ) => {
       let resData: T | undefined;
       switch (kpiPeriod) {

@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { useDaily, useWeekly, useMonthly, useYearly, useTotal } from '@/api/generated/endpoints/reports-analytics/reports-analytics';
 import { useGetAll1 } from '@/api/generated/endpoints/sales-transactions/sales-transactions';
+import type { SaleResponse, PeriodReportResponse } from '@/api/generated/model';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, CreditCard, Wallet, ShoppingCart, Users, Scissors, BarChart3, Calendar } from 'lucide-react';
@@ -87,7 +88,7 @@ export default function AdminDashboard() {
 
   const isLoading = dailyLoading || weeklyLoading || monthlyLoading || yearlyLoading || totalLoading || salaryLoading;
   const isFetching = dailyFetching || weeklyFetching || monthlyFetching || yearlyFetching || totalFetching;
-  const sales = salesRes?.data ?? [];
+  const sales: SaleResponse[] = (salesRes?.data)?.content ?? [];
   const recentSales = sales.slice(0, 8);
 
   const serviceMap = new Map<string, number>();
@@ -109,7 +110,7 @@ export default function AdminDashboard() {
 
   if (isLoading && !report) return <LoadingSpinner message="Loading statistics..." />;
 
-  const realizedProfit = (report as any)?.realizedProfit;
+  const realizedProfit = (report as PeriodReportResponse | undefined)?.realizedProfit;
 
   return (
     <div className={cn("transition-opacity duration-300", isFetching && "opacity-60")}>

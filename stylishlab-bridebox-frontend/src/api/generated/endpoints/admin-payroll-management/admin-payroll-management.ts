@@ -29,9 +29,14 @@ import type {
   ApiResponseAdvanceRequestResponse,
   ApiResponseListAdvanceRequestResponse,
   ApiResponseListPayrollResponse,
-  ApiResponseListSalaryTrackerResponse,
+  ApiResponsePageAdvanceRequestResponse,
+  ApiResponsePagePayrollResponse,
+  ApiResponsePageSalaryTrackerResponse,
   ApiResponsePayrollResponse,
   ApproveAdvanceRequestDto,
+  GetAllAdvancesParams,
+  GetAllHistoryParams,
+  GetAllTrackersParams,
   GetHistoryByDateRangeParams,
   SettleSalaryRequest
 } from '../../model';
@@ -174,16 +179,17 @@ export const useProcessAdvance = <TError = ErrorType<unknown>,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * @summary Get all employee live salary trackers
+ * @summary Get all employee live salary trackers with pagination
  */
 export const getAllTrackers = (
-    
+    params?: GetAllTrackersParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
       
-      return customInstance<ApiResponseListSalaryTrackerResponse>(
-      {url: `/api/admin/payroll/trackers`, method: 'GET', signal
+      return customInstance<ApiResponsePageSalaryTrackerResponse>(
+      {url: `/api/admin/payroll/trackers`, method: 'GET',
+        params, signal
     },
       options);
     }
@@ -191,23 +197,23 @@ export const getAllTrackers = (
 
 
 
-export const getGetAllTrackersQueryKey = () => {
+export const getGetAllTrackersQueryKey = (params?: GetAllTrackersParams,) => {
     return [
-    `/api/admin/payroll/trackers`
+    `/api/admin/payroll/trackers`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAllTrackersQueryOptions = <TData = Awaited<ReturnType<typeof getAllTrackers>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetAllTrackersQueryOptions = <TData = Awaited<ReturnType<typeof getAllTrackers>>, TError = ErrorType<unknown>>(params?: GetAllTrackersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAllTrackersQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAllTrackersQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllTrackers>>> = ({ signal }) => getAllTrackers(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllTrackers>>> = ({ signal }) => getAllTrackers(params, requestOptions, signal);
 
       
 
@@ -221,7 +227,7 @@ export type GetAllTrackersQueryError = ErrorType<unknown>
 
 
 export function useGetAllTrackers<TData = Awaited<ReturnType<typeof getAllTrackers>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>> & Pick<
+ params: undefined |  GetAllTrackersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllTrackers>>,
           TError,
@@ -231,7 +237,7 @@ export function useGetAllTrackers<TData = Awaited<ReturnType<typeof getAllTracke
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAllTrackers<TData = Awaited<ReturnType<typeof getAllTrackers>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>> & Pick<
+ params?: GetAllTrackersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllTrackers>>,
           TError,
@@ -241,19 +247,19 @@ export function useGetAllTrackers<TData = Awaited<ReturnType<typeof getAllTracke
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAllTrackers<TData = Awaited<ReturnType<typeof getAllTrackers>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAllTrackersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get all employee live salary trackers
+ * @summary Get all employee live salary trackers with pagination
  */
 
 export function useGetAllTrackers<TData = Awaited<ReturnType<typeof getAllTrackers>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAllTrackersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllTrackers>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAllTrackersQueryOptions(options)
+  const queryOptions = getGetAllTrackersQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -356,16 +362,17 @@ export function useGetStats<TData = Awaited<ReturnType<typeof getStats>>, TError
 
 
 /**
- * @summary Get all payroll history
+ * @summary Get all payroll history with pagination and filters
  */
 export const getAllHistory = (
-    
+    params?: GetAllHistoryParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
       
-      return customInstance<ApiResponseListPayrollResponse>(
-      {url: `/api/admin/payroll/history`, method: 'GET', signal
+      return customInstance<ApiResponsePagePayrollResponse>(
+      {url: `/api/admin/payroll/history`, method: 'GET',
+        params, signal
     },
       options);
     }
@@ -373,23 +380,23 @@ export const getAllHistory = (
 
 
 
-export const getGetAllHistoryQueryKey = () => {
+export const getGetAllHistoryQueryKey = (params?: GetAllHistoryParams,) => {
     return [
-    `/api/admin/payroll/history`
+    `/api/admin/payroll/history`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAllHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getAllHistory>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetAllHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getAllHistory>>, TError = ErrorType<unknown>>(params?: GetAllHistoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAllHistoryQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAllHistoryQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllHistory>>> = ({ signal }) => getAllHistory(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllHistory>>> = ({ signal }) => getAllHistory(params, requestOptions, signal);
 
       
 
@@ -403,7 +410,7 @@ export type GetAllHistoryQueryError = ErrorType<unknown>
 
 
 export function useGetAllHistory<TData = Awaited<ReturnType<typeof getAllHistory>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>> & Pick<
+ params: undefined |  GetAllHistoryParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllHistory>>,
           TError,
@@ -413,7 +420,7 @@ export function useGetAllHistory<TData = Awaited<ReturnType<typeof getAllHistory
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAllHistory<TData = Awaited<ReturnType<typeof getAllHistory>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>> & Pick<
+ params?: GetAllHistoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllHistory>>,
           TError,
@@ -423,19 +430,19 @@ export function useGetAllHistory<TData = Awaited<ReturnType<typeof getAllHistory
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAllHistory<TData = Awaited<ReturnType<typeof getAllHistory>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAllHistoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get all payroll history
+ * @summary Get all payroll history with pagination and filters
  */
 
 export function useGetAllHistory<TData = Awaited<ReturnType<typeof getAllHistory>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAllHistoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAllHistoryQueryOptions(options)
+  const queryOptions = getGetAllHistoryQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -630,16 +637,17 @@ export function useGetHistoryByDateRange<TData = Awaited<ReturnType<typeof getHi
 
 
 /**
- * @summary Get all advance requests
+ * @summary Get all advance requests with pagination and filters
  */
 export const getAllAdvances = (
-    
+    params?: GetAllAdvancesParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
       
-      return customInstance<ApiResponseListAdvanceRequestResponse>(
-      {url: `/api/admin/payroll/advances`, method: 'GET', signal
+      return customInstance<ApiResponsePageAdvanceRequestResponse>(
+      {url: `/api/admin/payroll/advances`, method: 'GET',
+        params, signal
     },
       options);
     }
@@ -647,23 +655,23 @@ export const getAllAdvances = (
 
 
 
-export const getGetAllAdvancesQueryKey = () => {
+export const getGetAllAdvancesQueryKey = (params?: GetAllAdvancesParams,) => {
     return [
-    `/api/admin/payroll/advances`
+    `/api/admin/payroll/advances`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAllAdvancesQueryOptions = <TData = Awaited<ReturnType<typeof getAllAdvances>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetAllAdvancesQueryOptions = <TData = Awaited<ReturnType<typeof getAllAdvances>>, TError = ErrorType<unknown>>(params?: GetAllAdvancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAllAdvancesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAllAdvancesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllAdvances>>> = ({ signal }) => getAllAdvances(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllAdvances>>> = ({ signal }) => getAllAdvances(params, requestOptions, signal);
 
       
 
@@ -677,7 +685,7 @@ export type GetAllAdvancesQueryError = ErrorType<unknown>
 
 
 export function useGetAllAdvances<TData = Awaited<ReturnType<typeof getAllAdvances>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>> & Pick<
+ params: undefined |  GetAllAdvancesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllAdvances>>,
           TError,
@@ -687,7 +695,7 @@ export function useGetAllAdvances<TData = Awaited<ReturnType<typeof getAllAdvanc
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAllAdvances<TData = Awaited<ReturnType<typeof getAllAdvances>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>> & Pick<
+ params?: GetAllAdvancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAllAdvances>>,
           TError,
@@ -697,19 +705,19 @@ export function useGetAllAdvances<TData = Awaited<ReturnType<typeof getAllAdvanc
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAllAdvances<TData = Awaited<ReturnType<typeof getAllAdvances>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAllAdvancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get all advance requests
+ * @summary Get all advance requests with pagination and filters
  */
 
 export function useGetAllAdvances<TData = Awaited<ReturnType<typeof getAllAdvances>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetAllAdvancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAdvances>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAllAdvancesQueryOptions(options)
+  const queryOptions = getGetAllAdvancesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

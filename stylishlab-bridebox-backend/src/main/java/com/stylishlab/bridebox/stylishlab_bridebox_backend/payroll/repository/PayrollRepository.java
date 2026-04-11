@@ -27,4 +27,16 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
 
     @Query(value = "SELECT COALESCE(SUM(net_paid), 0) FROM payrolls", nativeQuery = true)
     BigDecimal sumAllNetPaid();
+
+    @Query("SELECT p FROM Payroll p WHERE " +
+           "(:search IS NULL OR LOWER(p.employee.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.note) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.settledBy.username) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:fromDate IS NULL OR p.settledAt >= :fromDate) AND " +
+           "(:toDate IS NULL OR p.settledAt <= :toDate)")
+    org.springframework.data.domain.Page<Payroll> findAllWithFilters(
+            @Param("search") String search,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            org.springframework.data.domain.Pageable pageable);
 }

@@ -29,9 +29,11 @@ public class BillController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all bills")
-    public ResponseEntity<ApiResponse<List<BillResponse>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.ok(billService.getAll()));
+    @Operation(summary = "Get all bills with pagination")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<BillResponse>>> getAll(
+            @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(ApiResponse.ok(billService.getAllPaginated(search, pageable)));
     }
 
     @GetMapping("/{id}")
@@ -50,6 +52,13 @@ public class BillController {
     @Operation(summary = "Mark bill as paid")
     public ResponseEntity<ApiResponse<BillResponse>> settle(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok("Bill settled", billService.settle(id)));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete bill")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        billService.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("Bill deleted", null));
     }
 
     @GetMapping("/month/{yearMonth}")

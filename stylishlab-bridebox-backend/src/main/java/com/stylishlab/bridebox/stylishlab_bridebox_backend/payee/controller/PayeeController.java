@@ -52,4 +52,10 @@ public class PayeeController {
         payeeService.toggleStatus(id);
         return ResponseEntity.ok(ApiResponse.ok("Status toggled", null));
     }
+
+    @GetMapping("/types")
+    @Operation(summary = "Get all payee classifications")
+    public ResponseEntity<ApiResponse<List<PayeeTypeResponse>>> getTypes() {
+        return ResponseEntity.ok(ApiResponse.ok(payeeService.getPayeeTypes()));
+    }
 }

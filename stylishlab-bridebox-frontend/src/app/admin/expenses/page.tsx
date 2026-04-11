@@ -9,6 +9,7 @@ import {
   useGetCategories,
   useUpdate2,
   useDelete,
+  useGetByDateRange1,
 } from "@/api/generated/endpoints/expense-management/expense-management";
 import { useGetAll2 as useGetPayees } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
 import {
@@ -20,7 +21,7 @@ import {
 } from "@/api/generated/endpoints/reports-analytics/reports-analytics";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import {
   ExpenseResponse,
   ExpenseCategoryResponse,
@@ -50,7 +51,6 @@ const COMMON_REASONS = [
 ];
 
 export default function ExpensesPage() {
-  const { data: res, isLoading } = useGetAll3();
   const { data: catRes } = useGetCategories();
   const { data: payeeRes } = useGetPayees();
   const createMutation = useRecord();
@@ -60,29 +60,13 @@ export default function ExpensesPage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  const {
-    kpiPeriod,
-    setKpiPeriod,
-    selectedDate,
-    setSelectedDate,
-    selectedMonth,
-    selectedYear,
-    isDateInSelectedPeriod,
-    getKpiData,
-    reset: resetFilters,
-  } = usePeriodFilter();
-
-  const expenses = React.useMemo(
-    () => (res?.data ?? []) as ExpenseResponse[],
-    [res?.data],
-  );
   const categories = React.useMemo(
     () => (catRes?.data ?? []) as ExpenseCategoryResponse[],
-    [catRes?.data],
+    [catRes],
   );
   const payees = React.useMemo(
     () => (payeeRes?.data ?? []) as PayeeResponse[],
-    [payeeRes?.data],
+    [payeeRes],
   );
 
   const [open, setOpen] = useState(false);
@@ -110,6 +94,79 @@ export default function ExpensesPage() {
     editReason: "",
     editNote: "",
   });
+
+  const [filter, setFilter] = useState("");
+  const [debouncedFilter, setDebouncedFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Debounce filter logic
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedFilter(filter);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [filter]);
+
+  const {
+    kpiPeriod,
+    setKpiPeriod,
+    selectedDate,
+    setSelectedDate,
+    selectedMonth,
+    selectedYear,
+    getKpiData,
+    dateRange,
+    reset: resetFilters,
+  } = usePeriodFilter({ initialPeriod: "daily" });
+
+  // Expenses Queries
+  const expensesAllQuery = useGetAll3(
+    {
+      search: debouncedFilter,
+      pageable: {
+        page: currentPage - 1,
+        size: itemsPerPage,
+        sort: ["createdAt,desc"],
+      },
+    },
+    {
+      query: {
+        enabled: kpiPeriod === "total",
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
+
+  const expensesRangeQuery = useGetByDateRange1(
+    {
+      from: dateRange.from,
+      to: dateRange.to,
+      search: debouncedFilter,
+      pageable: {
+        page: currentPage - 1,
+        size: itemsPerPage,
+        sort: ["createdAt,desc"],
+      },
+    },
+    {
+      query: {
+        enabled: kpiPeriod !== "total",
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
+
+  const activeQuery = kpiPeriod === "total" ? expensesAllQuery : expensesRangeQuery;
+  const isListLoading = activeQuery.isLoading;
+
+  const expensesPageData = activeQuery.data?.data;
+  const filteredRecords = (expensesPageData?.content ?? []) as ExpenseResponse[];
+  const totalElements = expensesPageData?.totalElements ?? 0;
+  const totalPages = expensesPageData?.totalPages ?? 0;
 
   // Analytics Hooks
   const { data: dailyRes } = useDaily(
@@ -161,25 +218,21 @@ export default function ExpensesPage() {
     }
   }, [open, user?.username]);
 
-  const filteredRecords = React.useMemo(() => {
-    return expenses.filter((e) =>
-      isDateInSelectedPeriod(e.expenseDate || e.createdAt),
-    );
-  }, [expenses, isDateInSelectedPeriod]);
-
   const totalExpensesAudit = filteredRecords.reduce(
     (sum, e) => sum + (e.amount ?? 0),
     0,
   );
 
   const filteredPayees = React.useMemo(() => {
-    if (!form.categoryId) return payees.filter((p) => p.isActive);
+    const activePayees = payees.filter((p) => p.isActive);
+    if (!form.categoryId) return activePayees;
+
     const selectedCat = categories.find(
       (c) => c.id?.toString() === form.categoryId,
     );
-    if (!selectedCat) return payees.filter((p) => p.isActive);
-    return payees.filter((p) => {
-      if (!p.isActive) return false;
+    if (!selectedCat) return activePayees;
+
+    return activePayees.filter((p) => {
       if (!p.type) return true;
       const pType = p.type.toLowerCase();
       const cType = (selectedCat.categoryType || "").toLowerCase();
@@ -236,7 +289,9 @@ export default function ExpensesPage() {
             paidBy: user?.username || "",
           });
         },
-        onError: () => toast.error("Failed to record expense"),
+        onError: () => {
+          toast.error("Failed to record expense");
+        },
       },
     );
   };
@@ -275,14 +330,15 @@ export default function ExpensesPage() {
           queryClient.invalidateQueries();
           setEditItem(null);
         },
-        onError: (err: any) =>
-          toast.error(err.response?.data?.message || "Failed to update"),
+        onError: (err) => {
+          const message = (err as any)?.response?.data?.message;
+          toast.error(message || "Failed to update");
+        },
       },
     );
   };
 
   const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this record?")) return;
     deleteMutation.mutate(
       { id },
       {
@@ -290,13 +346,15 @@ export default function ExpensesPage() {
           toast.success("Expense deleted");
           queryClient.invalidateQueries();
         },
-        onError: (err: any) =>
-          toast.error(err.response?.data?.message || "Failed to delete"),
+        onError: (err) => {
+          const message = (err as any)?.response?.data?.message;
+          toast.error(message || "Failed to delete");
+        },
       },
     );
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isListLoading && !expensesPageData) return <LoadingSpinner />;
 
   return (
     <div className="space-y-6">
@@ -323,6 +381,8 @@ export default function ExpensesPage() {
 
       <ExpenseLedger
         records={filteredRecords}
+        isLoading={isListLoading}
+        isFetching={activeQuery.isFetching}
         onViewAudit={setViewAuditItem}
         onEdit={(record) => {
           setEditItem(record);
@@ -339,6 +399,14 @@ export default function ExpensesPage() {
         onDelete={handleDelete}
         formatCurrency={formatCurrency}
         totalAmount={totalExpensesAudit}
+        search={filter}
+        setSearch={setFilter}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        totalElements={totalElements}
+        totalPages={totalPages}
       />
 
       <PayeeRegistrationDialog

@@ -18,6 +18,8 @@ import com.stylishlab.bridebox.stylishlab_bridebox_backend.service.entity.SalonS
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.service.repository.SalonServiceRepository;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -132,8 +134,11 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public List<SaleResponse> getAll() {
-        return saleRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
+    public Page<SaleResponse> getAll(String search, Pageable pageable) {
+        if (search != null && !search.trim().isEmpty()) {
+            return saleRepository.findAllWithSearch(search, pageable).map(this::toResponse);
+        }
+        return saleRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Override
@@ -147,11 +152,15 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public List<SaleResponse> getByDateRange(LocalDate from, LocalDate to) {
+    public Page<SaleResponse> getByDateRange(LocalDate from, LocalDate to, String search, Pageable pageable) {
         LocalDateTime fromDt = from.atStartOfDay();
         LocalDateTime toDt = to.atTime(LocalTime.MAX);
-        return saleRepository.findByCreatedAtBetween(fromDt, toDt).stream()
-                .map(this::toResponse).collect(Collectors.toList());
+        if (search != null && !search.trim().isEmpty()) {
+            return saleRepository.findByCreatedAtBetweenWithSearch(search, fromDt, toDt, pageable)
+                    .map(this::toResponse);
+        }
+        return saleRepository.findByCreatedAtBetween(fromDt, toDt, pageable)
+                .map(this::toResponse);
     }
 
     private String generateInvoiceNo() {

@@ -54,6 +54,15 @@ public class PayeeService {
         repository.save(payee);
     }
 
+    public List<PayeeTypeResponse> getPayeeTypes() {
+        return java.util.Arrays.stream(com.stylishlab.bridebox.stylishlab_bridebox_backend.common.enums.PayeeType.values())
+                .map(type -> PayeeTypeResponse.builder()
+                        .value(type.name())
+                        .displayName(type.getDisplayName())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     private PayeeResponse toResponse(Payee p) {
         return PayeeResponse.builder()
                 .id(p.getId()).name(p.getName()).type(p.getType())

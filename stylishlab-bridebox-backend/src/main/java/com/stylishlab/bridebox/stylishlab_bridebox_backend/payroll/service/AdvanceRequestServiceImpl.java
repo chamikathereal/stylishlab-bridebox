@@ -100,9 +100,12 @@ public class AdvanceRequestServiceImpl implements AdvanceRequestService {
     }
 
     @Override
-    public List<AdvanceRequestResponse> getAllRequests() {
-        return advanceRepository.findAll().stream()
-                .map(this::toResponse).collect(Collectors.toList());
+    public org.springframework.data.domain.Page<AdvanceRequestResponse> getAllRequests(
+            String search, AdvanceStatus status,
+            LocalDateTime fromDate, LocalDateTime toDate,
+            org.springframework.data.domain.Pageable pageable) {
+        return advanceRepository.findAllWithFilters(search, status, fromDate, toDate, pageable)
+                .map(this::toResponse);
     }
 
     @Override

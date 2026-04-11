@@ -151,7 +151,7 @@ export default function EarningsPage() {
 
   const [period, setPeriod] = useState<
     "ALL" | "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY"
-  >("ALL");
+  >("DAILY");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -432,15 +432,16 @@ export default function EarningsPage() {
         />
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-3">
+      {/* Search & Filter - Unified Row */}
+      <div className="flex items-center gap-2">
         <div className="relative flex-1 group">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-primary text-muted-foreground">
             <Search className="h-4 w-4" />
           </div>
           <Input
             type="text"
-            placeholder="Search by customer name or invoice..."
-            className="pl-10 h-11 bg-background border-muted/20 rounded-xl shadow-sm focus:ring-primary/20 focus:border-primary transition-all text-sm w-full"
+            placeholder="Search transactions..."
+            className="pl-10 h-11 bg-background/60 backdrop-blur-sm border-muted/20 rounded-2xl shadow-sm focus:ring-primary/20 focus:border-primary transition-all text-sm w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -453,63 +454,76 @@ export default function EarningsPage() {
             </button>
           )}
         </div>
+
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
               buttonVariants({
                 variant: statusFilter !== "ALL" ? "secondary" : "outline",
               }),
-              "h-11 rounded-xl px-4 gap-2 transition-all shrink-0 min-w-[140px] justify-between cursor-pointer",
+              "h-11 rounded-2xl gap-2 transition-all shrink-0 cursor-pointer min-w-11 sm:min-w-[140px] px-0 sm:px-4 justify-center sm:justify-between relative",
               statusFilter !== "ALL"
                 ? "bg-primary/10 text-primary border-primary/20"
-                : "border-muted/20 hover:border-primary/30",
+                : "bg-background/60 backdrop-blur-sm border-muted/20 hover:border-primary/30",
               statusFilter === "CREDIT_ONLY" &&
                 "bg-amber-500/10 text-amber-600 border-amber-500/20",
             )}
           >
-            <span className="flex items-center justify-between w-full">
-              <span className="flex items-center gap-2">
-                <Filter
-                  className={cn(
-                    "w-3.5 h-3.5",
-                    statusFilter !== "ALL"
-                      ? "text-primary"
-                      : "text-muted-foreground",
-                    statusFilter === "CREDIT_ONLY" && "text-amber-500",
-                  )}
-                />
-                <span className="text-[13px] font-semibold whitespace-nowrap">
-                  {STATUS_OPTIONS.find((opt) => opt.id === statusFilter)?.label}
-                </span>
+            <span className="flex items-center gap-2">
+              <Filter
+                className={cn(
+                  "w-4 h-4",
+                  statusFilter !== "ALL"
+                    ? "text-primary"
+                    : "text-muted-foreground",
+                  statusFilter === "CREDIT_ONLY" && "text-amber-500",
+                )}
+              />
+              <span className="hidden sm:inline text-[13px] font-bold whitespace-nowrap">
+                {STATUS_OPTIONS.find((opt) => opt.id === statusFilter)?.label}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+              {statusFilter !== "ALL" && (
+                <span className="absolute top-2 right-2 sm:static w-2 h-2 rounded-full bg-primary shadow-sm sm:hidden animate-pulse" />
+              )}
             </span>
+            <ChevronDown className="w-3.5 h-3.5 opacity-50 hidden sm:block" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 border-white/10 p-1">
-            <DropdownMenuLabel className="text-[10px] uppercase font-bold text-muted-foreground px-2 py-1.5 tracking-widest">
-              Payment Status
+          <DropdownMenuContent
+            align="end"
+            className="w-56 border-white/10 p-1 rounded-xl shadow-xl"
+          >
+            <DropdownMenuLabel className="text-[10px] uppercase font-black text-muted-foreground px-2 py-2 tracking-widest opacity-70">
+              Filter by Status
             </DropdownMenuLabel>
-
             {STATUS_OPTIONS.map((f) => (
               <DropdownMenuItem
                 key={f.id}
                 className={cn(
-                  "flex items-center justify-between rounded-lg px-2 py-2 cursor-pointer transition-colors text-sm",
+                  "flex items-center justify-between rounded-lg px-2 py-2.5 cursor-pointer transition-colors text-sm mb-0.5",
                   statusFilter === f.id
                     ? "bg-primary/10 text-primary font-bold"
-                    : "hover:bg-white/5",
+                    : "hover:bg-muted/50",
                 )}
                 onClick={() => setStatusFilter(f.id)}
               >
                 <div className="flex items-center gap-2">
-                  <span>{f.label}</span>
+                  <span
+                    className={cn(
+                      statusFilter === f.id &&
+                        "translate-x-1 transition-transform",
+                    )}
+                  >
+                    {f.label}
+                  </span>
                   {f.icon && (
-                    <Badge className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/20 text-[8px] h-4 py-0 leading-none border-amber-500/10">
-                      Credits
+                    <Badge className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/20 text-[9px] h-4 px-1.5 py-0 leading-none border-amber-500/10 font-black">
+                      CREDITS
                     </Badge>
                   )}
                 </div>
-                {statusFilter === f.id && <Check className="w-4 h-4" />}
+                {statusFilter === f.id && (
+                  <Check className="w-4 h-4 animate-in zoom-in-50 duration-200" />
+                )}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

@@ -2,6 +2,8 @@ package com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.repository;
 
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.enums.PaymentStatus;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.entity.Sale;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,9 +18,22 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
 
     List<Sale> findByCustomerId(Long customerId);
 
-    List<Sale> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
+    @Query("SELECT s FROM Sale s WHERE " +
+           "LOWER(s.invoiceNo) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(s.customer.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(s.employee.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(s.serviceNameSnapshot) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Sale> findAllWithSearch(@Param("search") String search, Pageable pageable);
 
-    List<Sale> findByEmployeeIdAndCreatedAtBetween(Long employeeId, LocalDateTime from, LocalDateTime to);
+    @Query("SELECT s FROM Sale s WHERE " +
+           "(LOWER(s.invoiceNo) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(s.customer.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(s.employee.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(s.serviceNameSnapshot) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "s.createdAt BETWEEN :from AND :to")
+    Page<Sale> findByCreatedAtBetweenWithSearch(@Param("search") String search, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to, Pageable pageable);
+
+    Page<Sale> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
 
     List<Sale> findByPaymentStatusIn(List<PaymentStatus> statuses);
 

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
-import { StatCard } from "@/components/shared/StatCard";
 import {
   useGetStats,
   useGetAllTrackers,
@@ -14,94 +13,114 @@ import {
 } from "@/api/generated/endpoints/admin-payroll-management/admin-payroll-management";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Wallet,
-  Check,
-  X,
-  Search,
-  History,
-  AlertCircle,
-  TrendingUp,
-  CreditCard,
-} from "lucide-react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import {
   AdminPayrollStatsResponse,
   SalaryTrackerResponse,
   PayrollResponse,
   AdvanceRequestResponse,
+  GetAllAdvancesStatus,
 } from "@/api/generated/model";
 
-function formatCurrency(val?: number) {
-  return `Rs. ${(val ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-function formatDate(d?: string) {
-  return d
-    ? new Date(d).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "-";
-}
+// Modular Components
+import { SalaryStats } from "@/components/admin/salary/SalaryStats";
+import { SalaryFilters } from "@/components/admin/salary/SalaryFilters";
+import { SalarySummaryBar } from "@/components/admin/salary/SalarySummaryBar";
+import { LiveSalariesTable } from "@/components/admin/salary/LiveSalariesTable";
+import { AdvanceRequestsTable } from "@/components/admin/salary/AdvanceRequestsTable";
+import { PayrollHistoryTable } from "@/components/admin/salary/PayrollHistoryTable";
+import { SettleSalaryDialog } from "@/components/admin/salary/SettleSalaryDialog";
+import { ProcessAdvanceDialog } from "@/components/admin/salary/ProcessAdvanceDialog";
 
 export default function AdminSalaryPage() {
-  const [tab, setTab] = useState<"LIVE" | "HISTORY" | "ADVANCES">("LIVE");
+  const [tab, setTab] = useState<"LIVE" | "HISTORY" | "ADVANCES" | string>("LIVE");
   const [filter, setFilter] = useState("");
+  const [debouncedFilter, setDebouncedFilter] = useState("");
 
-  const { data: statsRes, isLoading: statsLoading } = useGetStats();
-  const { data: trackersRes, isLoading: trackersLoading } = useGetAllTrackers();
-  const { data: historyRes, isLoading: historyLoading } = useGetAllHistory();
-  const { data: advancesRes, isLoading: advancesLoading } = useGetAllAdvances();
+  // Pagination states
+  const [livePage, setLivePage] = useState(1);
+  const [liveSize, setLiveSize] = useState(10);
+  const [advPage, setAdvPage] = useState(1);
+  const [advSize, setAdvSize] = useState(10);
+  const [histPage, setHistPage] = useState(1);
+  const [histSize, setHistSize] = useState(10);
 
-  const settleMutation = useSettleSalary();
-  const processMutation = useProcessAdvance();
-  const queryClient = useQueryClient();
+  // Filter states
+  const [advStatus, setAdvStatus] = useState<string>("ALL");
+  const [advFromDate, setAdvFromDate] = useState("");
+  const [advToDate, setAdvToDate] = useState("");
+  const [histFromDate, setHistFromDate] = useState("");
+  const [histToDate, setHistToDate] = useState("");
 
-  // Dialog states
+  // Dialog & Selection states
   const [settleOpen, setSettleOpen] = useState(false);
-  const [selectedTracker, setSelectedTracker] =
-    useState<SalaryTrackerResponse | null>(null);
+  const [selectedTracker, setSelectedTracker] = useState<SalaryTrackerResponse | null>(null);
   const [settleNote, setSettleNote] = useState("");
 
   const [advanceOpen, setAdvanceOpen] = useState(false);
-  const [selectedAdvance, setSelectedAdvance] =
-    useState<AdvanceRequestResponse | null>(null);
+  const [selectedAdvance, setSelectedAdvance] = useState<AdvanceRequestResponse | null>(null);
   const [approveAmount, setApproveAmount] = useState("");
 
-  const stats = (statsRes?.data ?? {}) as AdminPayrollStatsResponse;
-  const trackers = (trackersRes?.data ?? []) as SalaryTrackerResponse[];
-  const history = (historyRes?.data ?? []) as PayrollResponse[];
-  const advances = (advancesRes?.data ?? []) as AdvanceRequestResponse[];
+  const queryClient = useQueryClient();
 
-  const isLoading =
-    statsLoading || trackersLoading || historyLoading || advancesLoading;
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedFilter(filter);
+      setLivePage(1);
+      setAdvPage(1);
+      setHistPage(1);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [filter]);
+
+  // API Queries
+  const { data: statsRes, isLoading: statsLoading } = useGetStats();
+
+  const { data: trackersRes, isLoading: trackersLoading } = useGetAllTrackers(
+    {
+      search: debouncedFilter || undefined,
+      page: livePage - 1,
+      size: liveSize,
+      sort: ["employee.fullName,asc"],
+    },
+    { query: { placeholderData: keepPreviousData } }
+  );
+
+  const { data: advancesRes, isLoading: advancesLoading } = useGetAllAdvances(
+    {
+      search: debouncedFilter || undefined,
+      page: advPage - 1,
+      size: advSize,
+      sort: ["requestedAt,desc"],
+      status: advStatus !== "ALL" ? (advStatus as GetAllAdvancesStatus) : undefined,
+      fromDate: advFromDate || undefined,
+      toDate: advToDate || undefined,
+    },
+    { query: { placeholderData: keepPreviousData } }
+  );
+
+  const { data: historyRes, isLoading: historyLoading } = useGetAllHistory(
+    {
+      search: debouncedFilter || undefined,
+      page: histPage - 1,
+      size: histSize,
+      sort: ["settledAt,desc"],
+      fromDate: histFromDate || undefined,
+      toDate: histToDate || undefined,
+    },
+    { query: { placeholderData: keepPreviousData } }
+  );
+
+  // Mutations
+  const settleMutation = useSettleSalary();
+  const processMutation = useProcessAdvance();
 
   const handleSettleSubmit = () => {
     if (!selectedTracker?.employeeId) return;
     settleMutation.mutate(
-      {
-        data: { employeeId: selectedTracker.employeeId, note: settleNote },
-      },
+      { data: { employeeId: selectedTracker.employeeId, note: settleNote } },
       {
         onSuccess: () => {
           toast.success("Salary settled successfully!");
@@ -110,19 +129,18 @@ export default function AdminSalaryPage() {
           setSettleNote("");
         },
         onError: () => toast.error("Failed to settle salary"),
-      },
+      }
     );
   };
 
   const handleProcessAdvance = (status: "APPROVED" | "REJECTED") => {
-    if (!selectedAdvance) return;
+    if (!selectedAdvance?.id) return;
     processMutation.mutate(
       {
-        id: selectedAdvance.id!,
+        id: selectedAdvance.id,
         data: {
           status,
-          approvedAmount:
-            status === "APPROVED" ? parseFloat(approveAmount) : undefined,
+          approvedAmount: status === "APPROVED" ? parseFloat(approveAmount) : undefined,
         },
       },
       {
@@ -132,517 +150,152 @@ export default function AdminSalaryPage() {
           setAdvanceOpen(false);
           setApproveAmount("");
         },
-        onError: (err: unknown) => {
-          const error = err as { response?: { data?: { error?: string } } };
-          toast.error(
-            error?.response?.data?.error ||
-              `Failed to ${status.toLowerCase()} advance`,
-          );
+        onError: (err: any) => {
+          const errorMsg = err?.response?.data?.error || `Failed to ${status.toLowerCase()} advance`;
+          toast.error(errorMsg);
         },
-      },
+      }
     );
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  // Helper logic
+  const clearAdvFilters = () => { setAdvStatus("ALL"); setAdvFromDate(""); setAdvToDate(""); setAdvPage(1); };
+  const clearHistFilters = () => { setHistFromDate(""); setHistToDate(""); setHistPage(1); };
+  const hasAdvFilters = !!(advStatus !== "ALL" || advFromDate || advToDate);
+  const hasHistFilters = !!(histFromDate || histToDate);
+  const hasGlobalFilters = !!(hasAdvFilters || hasHistFilters || debouncedFilter.length > 0);
+
+  const stats = (statsRes?.data ?? {}) as AdminPayrollStatsResponse;
+  const trackers = (trackersRes?.data?.content ?? []) as SalaryTrackerResponse[];
+  const trackersTotal = trackersRes?.data?.totalElements ?? 0;
+  const history = (historyRes?.data?.content ?? []) as PayrollResponse[];
+  const historyTotal = historyRes?.data?.totalElements ?? 0;
+  const advances = (advancesRes?.data?.content ?? []) as AdvanceRequestResponse[];
+  const advancesTotal = advancesRes?.data?.totalElements ?? 0;
+
+  if (statsLoading || trackersLoading || historyLoading || advancesLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Payroll Management"
-        description="Manage employee salaries and advances"
+        description="Monitor staff earnings, process advances and settle monthly salaries."
       />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Pending"
-          value={formatCurrency(stats.totalPendingSalary)}
-          icon={TrendingUp}
-          variant="primary"
-          subtitle="Awaiting settlement"
-        />
-        <StatCard
-          title="Total Paid (Month)"
-          value={formatCurrency(stats.totalPaidThisMonth)}
-          icon={Check}
-          variant="success"
-          subtitle="Distributed this month"
-        />
-        <StatCard
-          title="Total Advances"
-          value={formatCurrency(stats.totalAdvancesGiven)}
-          icon={CreditCard}
-          variant="warning"
-          subtitle="Temporary payouts"
-        />
-        <StatCard
-          title="Pending Payments"
-          value={`${stats.employeesPendingPaymentCount} Employees`}
-          icon={AlertCircle}
-          variant="primary"
-          subtitle="Requiring action"
-        />
+      <SalaryStats stats={stats} />
+
+      <div className="flex gap-2 p-1.5 bg-muted/40 backdrop-blur-sm rounded-2xl w-fit border border-muted/20">
+        {[
+          { id: "LIVE", label: "Live Salaries", icon: null },
+          { id: "ADVANCES", label: "Advance Requests", count: stats.pendingAdvanceRequestsCount },
+          { id: "HISTORY", label: "Settlement History", icon: null },
+        ].map((t) => (
+          <Button
+            key={t.id}
+            variant={tab === t.id ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setTab(t.id)}
+            className="rounded-xl px-4 font-bold text-xs uppercase tracking-wider transition-all"
+          >
+            {t.label}
+            {t.count && t.count > 0 && (
+              <span className="ml-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-[10px] font-black animate-pulse">
+                {t.count}
+              </span>
+            )}
+          </Button>
+        ))}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-muted/50 rounded-lg w-fit">
-        <Button
-          variant={tab === "LIVE" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setTab("LIVE")}
-        >
-          Live Salaries
-        </Button>
-        <Button
-          variant={tab === "ADVANCES" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setTab("ADVANCES")}
-        >
-          Advance Requests
-          {advances.filter((a) => a.status === "PENDING").length > 0 && (
-            <span className="ml-2 bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">
-              {advances.filter((a) => a.status === "PENDING").length}
-            </span>
-          )}
-        </Button>
-        <Button
-          variant={tab === "HISTORY" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setTab("HISTORY")}
-        >
-          Payroll History
-        </Button>
-      </div>
+      <SalaryFilters
+        tab={tab}
+        filter={filter}
+        setFilter={setFilter}
+        advStatus={advStatus}
+        setAdvStatus={setAdvStatus}
+        advFromDate={advFromDate}
+        setAdvFromDate={setAdvFromDate}
+        advToDate={advToDate}
+        setAdvToDate={setAdvToDate}
+        clearAdvFilters={clearAdvFilters}
+        hasAdvFilters={hasAdvFilters}
+        histFromDate={histFromDate}
+        setHistFromDate={setHistFromDate}
+        histToDate={histToDate}
+        setHistToDate={setHistToDate}
+        clearHistFilters={clearHistFilters}
+        hasHistFilters={hasHistFilters}
+      />
 
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="pl-10 max-w-sm"
-        />
-      </div>
+      <SalarySummaryBar
+        tab={tab}
+        trackers={trackers}
+        trackersTotal={trackersTotal}
+        advances={advances}
+        advancesTotal={advancesTotal}
+        history={history}
+        historyTotal={historyTotal}
+        hasFilters={hasGlobalFilters}
+      />
 
-      <Card className="glass-card overflow-hidden">
+      <Card className="glass-card overflow-hidden border-muted/20 rounded-2xl shadow-xl">
         <CardContent className="p-0">
           {tab === "LIVE" && (
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent border-muted-foreground/10">
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Employee
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
-                    Accumulated Salary
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
-                    Advances Token
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider text-emerald-600">
-                    Net Payable
-                  </TableHead>
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Last Settled
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {trackers
-                  .filter((t) =>
-                    t.employeeName
-                      ?.toLowerCase()
-                      .includes(filter.toLowerCase()),
-                  )
-                  .map((t) => (
-                    <TableRow
-                      key={t.id}
-                      className="group hover:bg-emerald-500/2 transition-colors border-muted-foreground/10"
-                    >
-                      <TableCell className="px-6 py-5 font-semibold text-sm">
-                        {t.employeeName}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right font-medium text-sm">
-                        {formatCurrency(t.currentSalary)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right font-medium text-sm text-amber-600">
-                        {formatCurrency(t.totalAdvances)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right font-black text-sm text-emerald-600">
-                        {formatCurrency(t.netPayable)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-xs text-muted-foreground">
-                        {formatDate(t.lastSettlementDate)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 text-xs font-semibold gap-2 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 hover:text-emerald-700 transition-all rounded-lg"
-                          disabled={
-                            t.netPayable === 0 &&
-                            t.totalAdvances === 0 &&
-                            t.currentSalary === 0
-                          }
-                          onClick={() => {
-                            setSelectedTracker(t);
-                            setSettleOpen(true);
-                          }}
-                        >
-                          <Wallet className="w-3.5 h-3.5" /> Settle
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                {trackers.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center py-6 text-muted-foreground"
-                    >
-                      No salary data recorded
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <LiveSalariesTable
+              trackers={trackers}
+              trackersTotal={trackersTotal}
+              page={livePage}
+              setPage={setLivePage}
+              size={liveSize}
+              setSize={setLiveSize}
+              onSettle={(t) => { setSelectedTracker(t); setSettleOpen(true); }}
+            />
           )}
-
           {tab === "ADVANCES" && (
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent border-muted-foreground/10">
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Date
-                  </TableHead>
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Employee
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
-                    Requested
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
-                    Approved
-                  </TableHead>
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Note
-                  </TableHead>
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Status
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {advances
-                  .filter((a) =>
-                    a.employeeName
-                      ?.toLowerCase()
-                      .includes(filter.toLowerCase()),
-                  )
-                  .map((a) => (
-                    <TableRow
-                      key={a.id}
-                      className="group hover:bg-blue-500/2 transition-colors border-muted-foreground/10"
-                    >
-                      <TableCell className="px-6 py-5 text-xs text-muted-foreground">
-                        {formatDate(a.requestedAt)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 font-semibold text-sm">
-                        {a.employeeName}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right font-bold text-sm">
-                        {formatCurrency(a.requestedAmount)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right text-emerald-600 font-bold text-sm">
-                        {a.approvedAmount
-                          ? formatCurrency(a.approvedAmount)
-                          : "-"}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-xs max-w-[200px] truncate">
-                        {a.note || "-"}
-                      </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <Badge
-                          variant={
-                            a.status === "APPROVED"
-                              ? "default"
-                              : a.status === "REJECTED"
-                                ? "destructive"
-                                : "secondary"
-                          }
-                          className="rounded-lg"
-                        >
-                          {a.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right">
-                        {a.status === "PENDING" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs font-semibold hover:bg-emerald-500/10 hover:text-emerald-600 transition-all rounded-lg"
-                            onClick={() => {
-                              setSelectedAdvance(a);
-                              setApproveAmount(
-                                a.requestedAmount?.toString() || "",
-                              );
-                              setAdvanceOpen(true);
-                            }}
-                          >
-                            Process
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                {advances.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="text-center py-6 text-muted-foreground"
-                    >
-                      No advance requests found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <AdvanceRequestsTable
+              advances={advances}
+              advancesTotal={advancesTotal}
+              page={advPage}
+              setPage={setAdvPage}
+              size={advSize}
+              setSize={setAdvSize}
+              onProcess={(a) => { setSelectedAdvance(a); setApproveAmount(a.requestedAmount?.toString() || ""); setAdvanceOpen(true); }}
+            />
           )}
-
           {tab === "HISTORY" && (
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent border-muted-foreground/10">
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Settled Date
-                  </TableHead>
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Employee
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
-                    Earnings Settled
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider">
-                    Advances Deducted
-                  </TableHead>
-                  <TableHead className="px-6 py-4 text-right font-bold text-xs uppercase tracking-wider text-emerald-600">
-                    Net Paid
-                  </TableHead>
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Authorized By
-                  </TableHead>
-                  <TableHead className="px-6 py-4 font-bold text-xs uppercase tracking-wider">
-                    Note
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history
-                  .filter((h) =>
-                    h.employeeName
-                      ?.toLowerCase()
-                      .includes(filter.toLowerCase()),
-                  )
-                  .sort(
-                    (a, b) =>
-                      new Date(b.settledAt!).getTime() -
-                      new Date(a.settledAt!).getTime(),
-                  )
-                  .map((h) => (
-                    <TableRow
-                      key={h.id}
-                      className="group hover:bg-muted/30 transition-colors border-muted-foreground/10"
-                    >
-                      <TableCell className="px-6 py-5 text-xs font-bold text-foreground">
-                        {formatDate(h.settledAt)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 font-semibold text-sm">
-                        {h.employeeName}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right font-medium text-sm">
-                        {formatCurrency(h.totalEarnings)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right text-destructive font-medium text-sm">
-                        {formatCurrency(h.totalAdvances)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-right font-black text-sm text-emerald-600">
-                        {formatCurrency(h.netPaid)}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-xs text-muted-foreground">
-                        {h.settledByName}
-                      </TableCell>
-                      <TableCell className="px-6 py-5 text-xs">
-                        {h.note || "-"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                {history.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="text-center py-6 text-muted-foreground"
-                    >
-                      <History className="w-8 h-8 opacity-20 mx-auto mb-2" />
-                      No settlement history
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <PayrollHistoryTable
+              history={history}
+              historyTotal={historyTotal}
+              page={histPage}
+              setPage={setHistPage}
+              size={histSize}
+              setSize={setHistSize}
+            />
           )}
         </CardContent>
       </Card>
 
-      {/* Settle Modal */}
-      <Dialog open={settleOpen} onOpenChange={setSettleOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Settle Salary</DialogTitle>
-          </DialogHeader>
-          {selectedTracker && (
-            <div className="space-y-4">
-              <div className="bg-muted p-4 rounded-lg space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Employee</span>
-                  <span className="font-medium">
-                    {selectedTracker.employeeName}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Total Accumulated
-                  </span>
-                  <span>{formatCurrency(selectedTracker.currentSalary)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Advances Deducted
-                  </span>
-                  <span className="text-destructive">
-                    - {formatCurrency(selectedTracker.totalAdvances)}
-                  </span>
-                </div>
-                <div className="flex justify-between font-bold text-lg pt-2 border-t border-border mt-2">
-                  <span className="text-foreground">Net Payout</span>
-                  <span className="text-emerald-500">
-                    {formatCurrency(selectedTracker.netPayable)}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <Label className="mb-2">Settlement Note (Optional)</Label>
-                <Input
-                  placeholder="e.g. Cleared via Bank Transfer"
-                  value={settleNote}
-                  className="h-10"
-                  onChange={(e) => setSettleNote(e.target.value)}
-                />
-              </div>
-              <div className="flex items-start gap-2 bg-blue-500/10 text-blue-600 p-3 rounded-lg text-xs">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <p>
-                  Settling this salary will permanently log it into history and
-                  reset the employee&apos;s current salary tracker back to Rs.
-                  0.00.
-                </p>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSettleOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              disabled={settleMutation.isPending || (selectedTracker?.netPayable ?? 0) <= 0}
-              onClick={handleSettleSubmit}
-            >
-              Confirm & Settle
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SettleSalaryDialog
+        open={settleOpen}
+        onOpenChange={setSettleOpen}
+        selectedTracker={selectedTracker}
+        settleNote={settleNote}
+        setSettleNote={setSettleNote}
+        onConfirm={handleSettleSubmit}
+        isPending={settleMutation.isPending}
+      />
 
-      {/* Process Advance Modal */}
-      <Dialog open={advanceOpen} onOpenChange={setAdvanceOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Process Advance Request</DialogTitle>
-          </DialogHeader>
-          {selectedAdvance && (
-            <div className="space-y-4">
-              <div className="bg-muted p-4 rounded-lg space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Employee</span>
-                  <span className="font-medium">
-                    {selectedAdvance.employeeName}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Requested Amount
-                  </span>
-                  <span className="font-bold">
-                    {formatCurrency(selectedAdvance.requestedAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Reason</span>
-                  <span>{selectedAdvance.note || "-"}</span>
-                </div>
-              </div>
-              <div>
-                <Label className="mb-2">Approved Amount</Label>
-                <Input
-                  type="number"
-                  className="h-10"
-                  value={approveAmount}
-                  onChange={(e) => setApproveAmount(e.target.value)}
-                />
-              </div>
-              <div className="flex items-start gap-2 bg-amber-500/10 text-amber-600 p-3 rounded-lg text-xs">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <p>
-                  Approving will override the requested amount if changed, and
-                  instantly deduct the value from their live Net Payout tracker.
-                </p>
-              </div>
-            </div>
-          )}
-          <DialogFooter className="gap-2">
-            <Button
-              className="h-10"
-              variant="outline"
-              onClick={() => setAdvanceOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              className="h-10"
-              disabled={processMutation.isPending}
-              onClick={() => handleProcessAdvance("REJECTED")}
-            >
-              <X className="w-4 h-4 mr-2" />
-              Reject
-            </Button>
-            <Button
-              className="bg-emerald-600 h-10 hover:bg-emerald-700 text-white"
-              disabled={processMutation.isPending}
-              onClick={() => handleProcessAdvance("APPROVED")}
-            >
-              <Check className="w-4 h-4 mr-2" />
-              Approve Advance
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ProcessAdvanceDialog
+        open={advanceOpen}
+        onOpenChange={setAdvanceOpen}
+        selectedAdvance={selectedAdvance}
+        approveAmount={approveAmount}
+        setApproveAmount={setApproveAmount}
+        onProcess={handleProcessAdvance}
+        isPending={processMutation.isPending}
+      />
     </div>
   );
 }
