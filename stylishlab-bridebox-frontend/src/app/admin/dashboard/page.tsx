@@ -10,7 +10,7 @@ import {
   useYearly,
   useTotal,
 } from "@/api/generated/endpoints/reports-analytics/reports-analytics";
-import { useGetAll1 } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
+import { useGetAllSales } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
 import type { SaleResponse, PeriodReportResponse } from "@/api/generated/model";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
     isLoading: totalLoading,
     isFetching: totalFetching,
   } = useTotal({ query: { placeholderData: keepPreviousData } });
-  const { data: salesRes, isLoading: salesLoading } = useGetAll1();
+  const { data: salesRes, isLoading: salesLoading } = useGetAllSales();
 
   const report = useMemo(() => {
     return getKpiData(

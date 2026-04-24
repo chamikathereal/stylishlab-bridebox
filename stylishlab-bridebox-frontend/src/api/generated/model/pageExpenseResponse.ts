@@ -10,8 +10,8 @@ import type { SortObject } from './sortObject';
 import type { PageableObject } from './pageableObject';
 
 export interface PageExpenseResponse {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
   size?: number;
   content?: ExpenseResponse[];
   number?: number;

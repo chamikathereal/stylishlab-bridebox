@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import {
-  useCreate2,
-  useUpdate1,
-  useGetTypes,
+  useCreatePayee,
+  useUpdatePayee,
+  useGetPayeeTypes,
 } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,9 +35,9 @@ export function PayeeRegistrationDialog({
   onSuccess,
   editingPayee,
 }: PayeeRegistrationDialogProps) {
-  const createMutation = useCreate2();
-  const updateMutation = useUpdate1();
-  const { data: typesRes, isLoading: isTypesLoading } = useGetTypes();
+  const createMutation = useCreatePayee();
+  const updateMutation = useUpdatePayee();
+  const { data: typesRes, isLoading: isTypesLoading } = useGetPayeeTypes();
   const queryClient = useQueryClient();
 
   const payeeTypes = typesRes?.data ?? [];

@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetAll6Params = {
+export type GetAllBillsParams = {
 /**
  * Zero-based page index (0..N)
  * @minimum 0

@@ -6,12 +6,12 @@ import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { StatCard } from "@/components/shared/StatCard";
 import { cn, getLocalDateString } from "@/lib/utils";
 import {
-  useGetAll4,
-  useCreate3,
-  useToggleStatus2,
-  useUpdateCommission,
-  useUpdate3,
-  useResetPassword1,
+  useGetAllEmployees,
+  useCreateEmployee,
+  useToggleEmployeeStatus,
+  useUpdateEmployeeCommission,
+  useUpdateEmployee,
+  useResetEmployeePassword,
 } from "@/api/generated/endpoints/employee-management/employee-management";
 import {
   useEmployeeEarnings,
@@ -75,14 +75,16 @@ import {
   EmployeeResponse,
   EmployeeEarningsResponse,
 } from "@/api/generated/model";
+import { ServiceCommissionManager } from "@/components/admin/ServiceCommissionManager";
+import { PercentCircle } from "lucide-react";
 
 export default function EmployeesPage() {
-  const { data: res, isLoading } = useGetAll4();
-  const createMutation = useCreate3();
-  const toggleMutation = useToggleStatus2();
-  const updateDetailsMutation = useUpdate3();
-  const updateCommissionMutation = useUpdateCommission();
-  const resetPasswordMutation = useResetPassword1();
+  const { data: res, isLoading } = useGetAllEmployees();
+  const createMutation = useCreateEmployee();
+  const toggleMutation = useToggleEmployeeStatus();
+  const updateDetailsMutation = useUpdateEmployee();
+  const updateCommissionMutation = useUpdateEmployeeCommission();
+  const resetPasswordMutation = useResetEmployeePassword();
   const queryClient = useQueryClient();
   const employees = (res?.data ?? []) as EmployeeResponse[];
 
@@ -98,6 +100,7 @@ export default function EmployeesPage() {
   const [editEmployee, setEditEmployee] = useState<EmployeeResponse | null>(
     null,
   );
+  const [commissionEmployee, setCommissionEmployee] = useState<EmployeeResponse | null>(null);
   const [editForm, setEditForm] = useState({
     fullName: "",
     mobile: "",
@@ -689,6 +692,14 @@ export default function EmployeesPage() {
                     <Button
                       size="sm"
                       variant="secondary"
+                      className="flex-1 text-xs"
+                      onClick={() => setCommissionEmployee(emp)}
+                    >
+                      <PercentCircle className="w-3 h-3 mr-1" /> Service
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
                       className="flex-1 text-xs bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 border-amber-500/20"
                       onClick={() => {
                         setResetPassEmployee(emp);
@@ -1053,6 +1064,26 @@ export default function EmployeesPage() {
                 : "Reset Password"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Service Commissions Dialog */}
+      <Dialog
+        open={!!commissionEmployee}
+        onOpenChange={(o) => !o && setCommissionEmployee(null)}
+      >
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>
+              Service Commissions: {commissionEmployee?.fullName}
+            </DialogTitle>
+          </DialogHeader>
+          {commissionEmployee?.id && (
+            <ServiceCommissionManager
+              employeeId={commissionEmployee.id}
+              title={commissionEmployee.fullName || ""}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

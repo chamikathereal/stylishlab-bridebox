@@ -132,7 +132,7 @@ export function useGetAllActive<TData = Awaited<ReturnType<typeof getAllActive>>
 /**
  * @summary Create a new bill category (Admin only)
  */
-export const create6 = (
+export const create = (
     billCategory: BodyType<BillCategory>,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -148,11 +148,11 @@ export const create6 = (
   
 
 
-export const getCreate6MutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create6>>, TError,{data: BodyType<BillCategory>}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof create6>>, TError,{data: BodyType<BillCategory>}, TContext> => {
+export const getCreateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create>>, TError,{data: BodyType<BillCategory>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof create>>, TError,{data: BodyType<BillCategory>}, TContext> => {
 
-const mutationKey = ['create6'];
+const mutationKey = ['create'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -162,10 +162,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof create6>>, {data: BodyType<BillCategory>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof create>>, {data: BodyType<BillCategory>}> = (props) => {
           const {data} = props ?? {};
 
-          return  create6(data,requestOptions)
+          return  create(data,requestOptions)
         }
 
         
@@ -173,23 +173,23 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type Create6MutationResult = NonNullable<Awaited<ReturnType<typeof create6>>>
-    export type Create6MutationBody = BodyType<BillCategory>
-    export type Create6MutationError = ErrorType<unknown>
+    export type CreateMutationResult = NonNullable<Awaited<ReturnType<typeof create>>>
+    export type CreateMutationBody = BodyType<BillCategory>
+    export type CreateMutationError = ErrorType<unknown>
 
     /**
  * @summary Create a new bill category (Admin only)
  */
-export const useCreate6 = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create6>>, TError,{data: BodyType<BillCategory>}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useCreate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create>>, TError,{data: BodyType<BillCategory>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof create6>>,
+        Awaited<ReturnType<typeof create>>,
         TError,
         {data: BodyType<BillCategory>},
         TContext
       > => {
 
-      const mutationOptions = getCreate6MutationOptions(options);
+      const mutationOptions = getCreateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -30,7 +30,7 @@ import type {
   ApiResponsePageBillResponse,
   ApiResponseVoid,
   CreateBillRequest,
-  GetAll6Params
+  GetAllBillsParams
 } from '../../model';
 
 import { customInstance } from '../../../axios-instance';
@@ -44,7 +44,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 /**
  * @summary Get bill by ID
  */
-export const getById4 = (
+export const getBillById = (
     id: number,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -59,69 +59,69 @@ export const getById4 = (
 
 
 
-export const getGetById4QueryKey = (id?: number,) => {
+export const getGetBillByIdQueryKey = (id?: number,) => {
     return [
     `/api/bills/${id}`
     ] as const;
     }
 
     
-export const getGetById4QueryOptions = <TData = Awaited<ReturnType<typeof getById4>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById4>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetBillByIdQueryOptions = <TData = Awaited<ReturnType<typeof getBillById>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillById>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetById4QueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetBillByIdQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getById4>>> = ({ signal }) => getById4(id, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBillById>>> = ({ signal }) => getBillById(id, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getById4>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBillById>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetById4QueryResult = NonNullable<Awaited<ReturnType<typeof getById4>>>
-export type GetById4QueryError = ErrorType<unknown>
+export type GetBillByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getBillById>>>
+export type GetBillByIdQueryError = ErrorType<unknown>
 
 
-export function useGetById4<TData = Awaited<ReturnType<typeof getById4>>, TError = ErrorType<unknown>>(
- id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById4>>, TError, TData>> & Pick<
+export function useGetBillById<TData = Awaited<ReturnType<typeof getBillById>>, TError = ErrorType<unknown>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillById>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getById4>>,
+          Awaited<ReturnType<typeof getBillById>>,
           TError,
-          Awaited<ReturnType<typeof getById4>>
+          Awaited<ReturnType<typeof getBillById>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetById4<TData = Awaited<ReturnType<typeof getById4>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById4>>, TError, TData>> & Pick<
+export function useGetBillById<TData = Awaited<ReturnType<typeof getBillById>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillById>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getById4>>,
+          Awaited<ReturnType<typeof getBillById>>,
           TError,
-          Awaited<ReturnType<typeof getById4>>
+          Awaited<ReturnType<typeof getBillById>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetById4<TData = Awaited<ReturnType<typeof getById4>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById4>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetBillById<TData = Awaited<ReturnType<typeof getBillById>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillById>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get bill by ID
  */
 
-export function useGetById4<TData = Awaited<ReturnType<typeof getById4>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById4>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetBillById<TData = Awaited<ReturnType<typeof getBillById>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillById>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetById4QueryOptions(id,options)
+  const queryOptions = getGetBillByIdQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -135,7 +135,7 @@ export function useGetById4<TData = Awaited<ReturnType<typeof getById4>>, TError
 /**
  * @summary Update bill
  */
-export const update5 = (
+export const updateBill = (
     id: number,
     createBillRequest: BodyType<CreateBillRequest>,
  options?: SecondParameter<typeof customInstance>,) => {
@@ -151,11 +151,11 @@ export const update5 = (
   
 
 
-export const getUpdate5MutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update5>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof update5>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext> => {
+export const getUpdateBillMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBill>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateBill>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext> => {
 
-const mutationKey = ['update5'];
+const mutationKey = ['updateBill'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -165,10 +165,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof update5>>, {id: number;data: BodyType<CreateBillRequest>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBill>>, {id: number;data: BodyType<CreateBillRequest>}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  update5(id,data,requestOptions)
+          return  updateBill(id,data,requestOptions)
         }
 
         
@@ -176,30 +176,30 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type Update5MutationResult = NonNullable<Awaited<ReturnType<typeof update5>>>
-    export type Update5MutationBody = BodyType<CreateBillRequest>
-    export type Update5MutationError = ErrorType<unknown>
+    export type UpdateBillMutationResult = NonNullable<Awaited<ReturnType<typeof updateBill>>>
+    export type UpdateBillMutationBody = BodyType<CreateBillRequest>
+    export type UpdateBillMutationError = ErrorType<unknown>
 
     /**
  * @summary Update bill
  */
-export const useUpdate5 = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof update5>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useUpdateBill = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBill>>, TError,{id: number;data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof update5>>,
+        Awaited<ReturnType<typeof updateBill>>,
         TError,
         {id: number;data: BodyType<CreateBillRequest>},
         TContext
       > => {
 
-      const mutationOptions = getUpdate5MutationOptions(options);
+      const mutationOptions = getUpdateBillMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Delete bill
  */
-export const delete1 = (
+export const deleteBill = (
     id: number,
  options?: SecondParameter<typeof customInstance>,) => {
       
@@ -212,11 +212,11 @@ export const delete1 = (
   
 
 
-export const getDelete1MutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof delete1>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof delete1>>, TError,{id: number}, TContext> => {
+export const getDeleteBillMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBill>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBill>>, TError,{id: number}, TContext> => {
 
-const mutationKey = ['delete1'];
+const mutationKey = ['deleteBill'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -226,10 +226,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof delete1>>, {id: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBill>>, {id: number}> = (props) => {
           const {id} = props ?? {};
 
-          return  delete1(id,requestOptions)
+          return  deleteBill(id,requestOptions)
         }
 
         
@@ -237,31 +237,31 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type Delete1MutationResult = NonNullable<Awaited<ReturnType<typeof delete1>>>
+    export type DeleteBillMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBill>>>
     
-    export type Delete1MutationError = ErrorType<unknown>
+    export type DeleteBillMutationError = ErrorType<unknown>
 
     /**
  * @summary Delete bill
  */
-export const useDelete1 = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof delete1>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useDeleteBill = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBill>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof delete1>>,
+        Awaited<ReturnType<typeof deleteBill>>,
         TError,
         {id: number},
         TContext
       > => {
 
-      const mutationOptions = getDelete1MutationOptions(options);
+      const mutationOptions = getDeleteBillMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Get all bills with pagination
  */
-export const getAll6 = (
-    params?: GetAll6Params,
+export const getAllBills = (
+    params?: GetAllBillsParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
@@ -276,69 +276,69 @@ export const getAll6 = (
 
 
 
-export const getGetAll6QueryKey = (params?: GetAll6Params,) => {
+export const getGetAllBillsQueryKey = (params?: GetAllBillsParams,) => {
     return [
     `/api/bills`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAll6QueryOptions = <TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(params?: GetAll6Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetAllBillsQueryOptions = <TData = Awaited<ReturnType<typeof getAllBills>>, TError = ErrorType<unknown>>(params?: GetAllBillsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllBills>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAll6QueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetAllBillsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAll6>>> = ({ signal }) => getAll6(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllBills>>> = ({ signal }) => getAllBills(params, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllBills>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAll6QueryResult = NonNullable<Awaited<ReturnType<typeof getAll6>>>
-export type GetAll6QueryError = ErrorType<unknown>
+export type GetAllBillsQueryResult = NonNullable<Awaited<ReturnType<typeof getAllBills>>>
+export type GetAllBillsQueryError = ErrorType<unknown>
 
 
-export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(
- params: undefined |  GetAll6Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>> & Pick<
+export function useGetAllBills<TData = Awaited<ReturnType<typeof getAllBills>>, TError = ErrorType<unknown>>(
+ params: undefined |  GetAllBillsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllBills>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAll6>>,
+          Awaited<ReturnType<typeof getAllBills>>,
           TError,
-          Awaited<ReturnType<typeof getAll6>>
+          Awaited<ReturnType<typeof getAllBills>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(
- params?: GetAll6Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>> & Pick<
+export function useGetAllBills<TData = Awaited<ReturnType<typeof getAllBills>>, TError = ErrorType<unknown>>(
+ params?: GetAllBillsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllBills>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAll6>>,
+          Awaited<ReturnType<typeof getAllBills>>,
           TError,
-          Awaited<ReturnType<typeof getAll6>>
+          Awaited<ReturnType<typeof getAllBills>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(
- params?: GetAll6Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetAllBills<TData = Awaited<ReturnType<typeof getAllBills>>, TError = ErrorType<unknown>>(
+ params?: GetAllBillsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllBills>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get all bills with pagination
  */
 
-export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError = ErrorType<unknown>>(
- params?: GetAll6Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll6>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetAllBills<TData = Awaited<ReturnType<typeof getAllBills>>, TError = ErrorType<unknown>>(
+ params?: GetAllBillsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllBills>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAll6QueryOptions(params,options)
+  const queryOptions = getGetAllBillsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -352,7 +352,7 @@ export function useGetAll6<TData = Awaited<ReturnType<typeof getAll6>>, TError =
 /**
  * @summary Create monthly bill
  */
-export const create5 = (
+export const createBill = (
     createBillRequest: BodyType<CreateBillRequest>,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -368,11 +368,11 @@ export const create5 = (
   
 
 
-export const getCreate5MutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create5>>, TError,{data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof create5>>, TError,{data: BodyType<CreateBillRequest>}, TContext> => {
+export const getCreateBillMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBill>>, TError,{data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBill>>, TError,{data: BodyType<CreateBillRequest>}, TContext> => {
 
-const mutationKey = ['create5'];
+const mutationKey = ['createBill'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -382,10 +382,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof create5>>, {data: BodyType<CreateBillRequest>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBill>>, {data: BodyType<CreateBillRequest>}> = (props) => {
           const {data} = props ?? {};
 
-          return  create5(data,requestOptions)
+          return  createBill(data,requestOptions)
         }
 
         
@@ -393,30 +393,30 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type Create5MutationResult = NonNullable<Awaited<ReturnType<typeof create5>>>
-    export type Create5MutationBody = BodyType<CreateBillRequest>
-    export type Create5MutationError = ErrorType<unknown>
+    export type CreateBillMutationResult = NonNullable<Awaited<ReturnType<typeof createBill>>>
+    export type CreateBillMutationBody = BodyType<CreateBillRequest>
+    export type CreateBillMutationError = ErrorType<unknown>
 
     /**
  * @summary Create monthly bill
  */
-export const useCreate5 = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create5>>, TError,{data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useCreateBill = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBill>>, TError,{data: BodyType<CreateBillRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof create5>>,
+        Awaited<ReturnType<typeof createBill>>,
         TError,
         {data: BodyType<CreateBillRequest>},
         TContext
       > => {
 
-      const mutationOptions = getCreate5MutationOptions(options);
+      const mutationOptions = getCreateBillMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Mark bill as paid
  */
-export const settle = (
+export const settleBill = (
     id: number,
  options?: SecondParameter<typeof customInstance>,) => {
       
@@ -429,11 +429,11 @@ export const settle = (
   
 
 
-export const getSettleMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof settle>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof settle>>, TError,{id: number}, TContext> => {
+export const getSettleBillMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof settleBill>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof settleBill>>, TError,{id: number}, TContext> => {
 
-const mutationKey = ['settle'];
+const mutationKey = ['settleBill'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -443,10 +443,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof settle>>, {id: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof settleBill>>, {id: number}> = (props) => {
           const {id} = props ?? {};
 
-          return  settle(id,requestOptions)
+          return  settleBill(id,requestOptions)
         }
 
         
@@ -454,23 +454,23 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SettleMutationResult = NonNullable<Awaited<ReturnType<typeof settle>>>
+    export type SettleBillMutationResult = NonNullable<Awaited<ReturnType<typeof settleBill>>>
     
-    export type SettleMutationError = ErrorType<unknown>
+    export type SettleBillMutationError = ErrorType<unknown>
 
     /**
  * @summary Mark bill as paid
  */
-export const useSettle = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof settle>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useSettleBill = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof settleBill>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof settle>>,
+        Awaited<ReturnType<typeof settleBill>>,
         TError,
         {id: number},
         TContext
       > => {
 
-      const mutationOptions = getSettleMutationOptions(options);
+      const mutationOptions = getSettleBillMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -478,7 +478,7 @@ export const useSettle = <TError = ErrorType<unknown>,
  * Format: YYYY-MM
  * @summary Get bills by month
  */
-export const getByMonth = (
+export const getBillsByMonth = (
     yearMonth: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -493,69 +493,69 @@ export const getByMonth = (
 
 
 
-export const getGetByMonthQueryKey = (yearMonth?: string,) => {
+export const getGetBillsByMonthQueryKey = (yearMonth?: string,) => {
     return [
     `/api/bills/month/${yearMonth}`
     ] as const;
     }
 
     
-export const getGetByMonthQueryOptions = <TData = Awaited<ReturnType<typeof getByMonth>>, TError = ErrorType<unknown>>(yearMonth: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByMonth>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetBillsByMonthQueryOptions = <TData = Awaited<ReturnType<typeof getBillsByMonth>>, TError = ErrorType<unknown>>(yearMonth: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillsByMonth>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetByMonthQueryKey(yearMonth);
+  const queryKey =  queryOptions?.queryKey ?? getGetBillsByMonthQueryKey(yearMonth);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getByMonth>>> = ({ signal }) => getByMonth(yearMonth, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBillsByMonth>>> = ({ signal }) => getBillsByMonth(yearMonth, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(yearMonth), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getByMonth>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(yearMonth), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBillsByMonth>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetByMonthQueryResult = NonNullable<Awaited<ReturnType<typeof getByMonth>>>
-export type GetByMonthQueryError = ErrorType<unknown>
+export type GetBillsByMonthQueryResult = NonNullable<Awaited<ReturnType<typeof getBillsByMonth>>>
+export type GetBillsByMonthQueryError = ErrorType<unknown>
 
 
-export function useGetByMonth<TData = Awaited<ReturnType<typeof getByMonth>>, TError = ErrorType<unknown>>(
- yearMonth: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByMonth>>, TError, TData>> & Pick<
+export function useGetBillsByMonth<TData = Awaited<ReturnType<typeof getBillsByMonth>>, TError = ErrorType<unknown>>(
+ yearMonth: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillsByMonth>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getByMonth>>,
+          Awaited<ReturnType<typeof getBillsByMonth>>,
           TError,
-          Awaited<ReturnType<typeof getByMonth>>
+          Awaited<ReturnType<typeof getBillsByMonth>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetByMonth<TData = Awaited<ReturnType<typeof getByMonth>>, TError = ErrorType<unknown>>(
- yearMonth: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByMonth>>, TError, TData>> & Pick<
+export function useGetBillsByMonth<TData = Awaited<ReturnType<typeof getBillsByMonth>>, TError = ErrorType<unknown>>(
+ yearMonth: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillsByMonth>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getByMonth>>,
+          Awaited<ReturnType<typeof getBillsByMonth>>,
           TError,
-          Awaited<ReturnType<typeof getByMonth>>
+          Awaited<ReturnType<typeof getBillsByMonth>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetByMonth<TData = Awaited<ReturnType<typeof getByMonth>>, TError = ErrorType<unknown>>(
- yearMonth: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByMonth>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetBillsByMonth<TData = Awaited<ReturnType<typeof getBillsByMonth>>, TError = ErrorType<unknown>>(
+ yearMonth: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillsByMonth>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get bills by month
  */
 
-export function useGetByMonth<TData = Awaited<ReturnType<typeof getByMonth>>, TError = ErrorType<unknown>>(
- yearMonth: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByMonth>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetBillsByMonth<TData = Awaited<ReturnType<typeof getBillsByMonth>>, TError = ErrorType<unknown>>(
+ yearMonth: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBillsByMonth>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetByMonthQueryOptions(yearMonth,options)
+  const queryOptions = getGetBillsByMonthQueryOptions(yearMonth,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

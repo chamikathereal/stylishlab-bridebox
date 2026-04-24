@@ -5,13 +5,11 @@
  * API for managing salon services, employees, customers, sales, expenses, and reports
  * OpenAPI spec version: 1.0.0
  */
-import type { SortObject } from './sortObject';
+import type { ServiceCommissionResponse } from './serviceCommissionResponse';
 
-export interface PageableObject {
-  offset?: number;
-  sort?: SortObject;
-  pageNumber?: number;
-  pageSize?: number;
-  paged?: boolean;
-  unpaged?: boolean;
+export interface ApiResponseServiceCommissionResponse {
+  success?: boolean;
+  message?: string;
+  data?: ServiceCommissionResponse;
+  timestamp?: string;
 }

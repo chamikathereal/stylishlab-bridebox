@@ -22,39 +22,39 @@ public class PayeeController {
     private final PayeeService payeeService;
 
     @PostMapping
-    @Operation(summary = "Create payee")
+    @Operation(summary = "Create payee", operationId = "createPayee")
     public ResponseEntity<ApiResponse<PayeeResponse>> create(@Valid @RequestBody CreatePayeeRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Payee created", payeeService.create(request)));
     }
 
     @GetMapping
-    @Operation(summary = "Get all payees")
+    @Operation(summary = "Get all payees", operationId = "getAllPayees")
     public ResponseEntity<ApiResponse<List<PayeeResponse>>> getAll() {
         return ResponseEntity.ok(ApiResponse.ok(payeeService.getAll()));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get payee by ID")
+    @Operation(summary = "Get payee by ID", operationId = "getPayeeById")
     public ResponseEntity<ApiResponse<PayeeResponse>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(payeeService.getById(id)));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update payee")
+    @Operation(summary = "Update payee", operationId = "updatePayee")
     public ResponseEntity<ApiResponse<PayeeResponse>> update(@PathVariable Long id, @RequestBody UpdatePayeeRequest request) {
         return ResponseEntity.ok(ApiResponse.ok("Payee updated", payeeService.update(id, request)));
     }
 
     @PatchMapping("/{id}/status")
-    @Operation(summary = "Toggle payee active/inactive")
+    @Operation(summary = "Toggle payee active/inactive", operationId = "togglePayeeStatus")
     public ResponseEntity<ApiResponse<Void>> toggleStatus(@PathVariable Long id) {
         payeeService.toggleStatus(id);
         return ResponseEntity.ok(ApiResponse.ok("Status toggled", null));
     }
 
     @GetMapping("/types")
-    @Operation(summary = "Get all payee classifications")
+    @Operation(summary = "Get all payee classifications", operationId = "getPayeeTypes")
     public ResponseEntity<ApiResponse<List<PayeeTypeResponse>>> getTypes() {
         return ResponseEntity.ok(ApiResponse.ok(payeeService.getPayeeTypes()));
     }

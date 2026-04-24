@@ -5,9 +5,7 @@
  * API for managing salon services, employees, customers, sales, expenses, and reports
  * OpenAPI spec version: 1.0.0
  */
-import type { Pageable } from './pageable';
 
-export type GetAll3Params = {
-search?: string;
-pageable: Pageable;
+export type SearchCustomersParams = {
+name: string;
 };

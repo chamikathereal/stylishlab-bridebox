@@ -8,13 +8,13 @@ import { toast } from "sonner";
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 
 import {
-  useGetAll1,
-  useCreate1,
-  useGetByDateRange,
+  useGetAllSales,
+  useCreateSale,
+  useGetSalesByDateRange,
 } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
-import { useGetAll5 as useGetCustomers } from "@/api/generated/endpoints/customer-management/customer-management";
-import { useGetActive } from "@/api/generated/endpoints/service-packages/service-packages";
-import { useGetAll4 as useGetEmployees } from "@/api/generated/endpoints/employee-management/employee-management";
+import { useGetAllCustomers as useGetCustomers } from "@/api/generated/endpoints/customer-management/customer-management";
+import { useGetActiveServices as useGetActive } from "@/api/generated/endpoints/service-packages/service-packages";
+import { useGetAllEmployees as useGetEmployees } from "@/api/generated/endpoints/employee-management/employee-management";
 import {
   useDaily,
   useWeekly,
@@ -44,7 +44,7 @@ export default function SalesPage() {
   const { data: custRes } = useGetCustomers();
   const { data: svcRes } = useGetActive();
   const { data: empRes } = useGetEmployees();
-  const createMutation = useCreate1();
+  const createMutation = useCreateSale();
   const queryClient = useQueryClient();
 
   const customers = (custRes?.data ?? []) as CustomerResponse[];
@@ -122,7 +122,7 @@ export default function SalesPage() {
     paidAmount: "",
   });
 
-  const salesAllCount = useGetAll1(
+  const salesAllCount = useGetAllSales(
     {
       page: currentPage - 1,
       size: itemsPerPage,
@@ -137,7 +137,7 @@ export default function SalesPage() {
     },
   );
 
-  const salesByRange = useGetByDateRange(
+  const salesByRange = useGetSalesByDateRange(
     {
       from: dateRange.from,
       to: dateRange.to,

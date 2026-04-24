@@ -29,14 +29,14 @@ public class SaleController {
     private final SaleService saleService;
 
     @PostMapping
-    @Operation(summary = "Record a sale", description = "Creates sale with price and commission snapshots frozen at time of recording")
+    @Operation(summary = "Record a sale", operationId = "createSale", description = "Creates sale with price and commission snapshots frozen at time of recording")
     public ResponseEntity<ApiResponse<SaleResponse>> create(@Valid @RequestBody CreateSaleRequest request, Authentication auth) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Sale recorded", saleService.createSale(request, auth.getName())));
     }
 
     @GetMapping
-    @Operation(summary = "Get all sales")
+    @Operation(summary = "Get all sales", operationId = "getAllSales")
     public ResponseEntity<ApiResponse<Page<SaleResponse>>> getAll(
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
@@ -47,25 +47,25 @@ public class SaleController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get sale by ID")
+    @Operation(summary = "Get sale by ID", operationId = "getSaleById")
     public ResponseEntity<ApiResponse<SaleResponse>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(saleService.getById(id)));
     }
 
     @GetMapping("/employee/{employeeId}")
-    @Operation(summary = "Get sales by employee")
+    @Operation(summary = "Get sales by employee", operationId = "getSalesByEmployee")
     public ResponseEntity<ApiResponse<List<SaleResponse>>> getByEmployee(@PathVariable Long employeeId) {
         return ResponseEntity.ok(ApiResponse.ok(saleService.getByEmployee(employeeId)));
     }
 
     @GetMapping("/customer/{customerId}")
-    @Operation(summary = "Get sales by customer")
+    @Operation(summary = "Get sales by customer", operationId = "getSalesByCustomer")
     public ResponseEntity<ApiResponse<List<SaleResponse>>> getByCustomer(@PathVariable Long customerId) {
         return ResponseEntity.ok(ApiResponse.ok(saleService.getByCustomer(customerId)));
     }
 
     @GetMapping("/date-range")
-    @Operation(summary = "Get sales by date range")
+    @Operation(summary = "Get sales by date range", operationId = "getSalesByDateRange")
     public ResponseEntity<ApiResponse<Page<SaleResponse>>> getByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,

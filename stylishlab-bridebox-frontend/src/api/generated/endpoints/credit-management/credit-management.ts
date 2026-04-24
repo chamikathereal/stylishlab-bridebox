@@ -43,7 +43,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * Record a payment against a credit or partially paid sale
  * @summary Record credit payment
  */
-export const recordPayment = (
+export const recordCreditPayment = (
     saleId: number,
     recordCreditPaymentRequest: BodyType<RecordCreditPaymentRequest>,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
@@ -60,11 +60,11 @@ export const recordPayment = (
   
 
 
-export const getRecordPaymentMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordPayment>>, TError,{saleId: number;data: BodyType<RecordCreditPaymentRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof recordPayment>>, TError,{saleId: number;data: BodyType<RecordCreditPaymentRequest>}, TContext> => {
+export const getRecordCreditPaymentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordCreditPayment>>, TError,{saleId: number;data: BodyType<RecordCreditPaymentRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof recordCreditPayment>>, TError,{saleId: number;data: BodyType<RecordCreditPaymentRequest>}, TContext> => {
 
-const mutationKey = ['recordPayment'];
+const mutationKey = ['recordCreditPayment'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -74,10 +74,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordPayment>>, {saleId: number;data: BodyType<RecordCreditPaymentRequest>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordCreditPayment>>, {saleId: number;data: BodyType<RecordCreditPaymentRequest>}> = (props) => {
           const {saleId,data} = props ?? {};
 
-          return  recordPayment(saleId,data,requestOptions)
+          return  recordCreditPayment(saleId,data,requestOptions)
         }
 
         
@@ -85,30 +85,30 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RecordPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof recordPayment>>>
-    export type RecordPaymentMutationBody = BodyType<RecordCreditPaymentRequest>
-    export type RecordPaymentMutationError = ErrorType<unknown>
+    export type RecordCreditPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof recordCreditPayment>>>
+    export type RecordCreditPaymentMutationBody = BodyType<RecordCreditPaymentRequest>
+    export type RecordCreditPaymentMutationError = ErrorType<unknown>
 
     /**
  * @summary Record credit payment
  */
-export const useRecordPayment = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordPayment>>, TError,{saleId: number;data: BodyType<RecordCreditPaymentRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useRecordCreditPayment = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordCreditPayment>>, TError,{saleId: number;data: BodyType<RecordCreditPaymentRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof recordPayment>>,
+        Awaited<ReturnType<typeof recordCreditPayment>>,
         TError,
         {saleId: number;data: BodyType<RecordCreditPaymentRequest>},
         TContext
       > => {
 
-      const mutationOptions = getRecordPaymentMutationOptions(options);
+      const mutationOptions = getRecordCreditPaymentMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Get credit payment history for a sale
  */
-export const getSaleHistory = (
+export const getSaleCreditHistory = (
     saleId: number,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -123,69 +123,69 @@ export const getSaleHistory = (
 
 
 
-export const getGetSaleHistoryQueryKey = (saleId?: number,) => {
+export const getGetSaleCreditHistoryQueryKey = (saleId?: number,) => {
     return [
     `/api/credits/sales/${saleId}/history`
     ] as const;
     }
 
     
-export const getGetSaleHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getSaleHistory>>, TError = ErrorType<unknown>>(saleId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetSaleCreditHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getSaleCreditHistory>>, TError = ErrorType<unknown>>(saleId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleCreditHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSaleHistoryQueryKey(saleId);
+  const queryKey =  queryOptions?.queryKey ?? getGetSaleCreditHistoryQueryKey(saleId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSaleHistory>>> = ({ signal }) => getSaleHistory(saleId, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSaleCreditHistory>>> = ({ signal }) => getSaleCreditHistory(saleId, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(saleId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSaleHistory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(saleId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSaleCreditHistory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetSaleHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getSaleHistory>>>
-export type GetSaleHistoryQueryError = ErrorType<unknown>
+export type GetSaleCreditHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getSaleCreditHistory>>>
+export type GetSaleCreditHistoryQueryError = ErrorType<unknown>
 
 
-export function useGetSaleHistory<TData = Awaited<ReturnType<typeof getSaleHistory>>, TError = ErrorType<unknown>>(
- saleId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleHistory>>, TError, TData>> & Pick<
+export function useGetSaleCreditHistory<TData = Awaited<ReturnType<typeof getSaleCreditHistory>>, TError = ErrorType<unknown>>(
+ saleId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleCreditHistory>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSaleHistory>>,
+          Awaited<ReturnType<typeof getSaleCreditHistory>>,
           TError,
-          Awaited<ReturnType<typeof getSaleHistory>>
+          Awaited<ReturnType<typeof getSaleCreditHistory>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSaleHistory<TData = Awaited<ReturnType<typeof getSaleHistory>>, TError = ErrorType<unknown>>(
- saleId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleHistory>>, TError, TData>> & Pick<
+export function useGetSaleCreditHistory<TData = Awaited<ReturnType<typeof getSaleCreditHistory>>, TError = ErrorType<unknown>>(
+ saleId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleCreditHistory>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSaleHistory>>,
+          Awaited<ReturnType<typeof getSaleCreditHistory>>,
           TError,
-          Awaited<ReturnType<typeof getSaleHistory>>
+          Awaited<ReturnType<typeof getSaleCreditHistory>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSaleHistory<TData = Awaited<ReturnType<typeof getSaleHistory>>, TError = ErrorType<unknown>>(
- saleId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSaleCreditHistory<TData = Awaited<ReturnType<typeof getSaleCreditHistory>>, TError = ErrorType<unknown>>(
+ saleId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleCreditHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get credit payment history for a sale
  */
 
-export function useGetSaleHistory<TData = Awaited<ReturnType<typeof getSaleHistory>>, TError = ErrorType<unknown>>(
- saleId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSaleCreditHistory<TData = Awaited<ReturnType<typeof getSaleCreditHistory>>, TError = ErrorType<unknown>>(
+ saleId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleCreditHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetSaleHistoryQueryOptions(saleId,options)
+  const queryOptions = getGetSaleCreditHistoryQueryOptions(saleId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -199,7 +199,7 @@ export function useGetSaleHistory<TData = Awaited<ReturnType<typeof getSaleHisto
 /**
  * @summary Get customers with pending credits
  */
-export const getPending = (
+export const getPendingCredits = (
     
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -214,69 +214,69 @@ export const getPending = (
 
 
 
-export const getGetPendingQueryKey = () => {
+export const getGetPendingCreditsQueryKey = () => {
     return [
     `/api/credits/pending`
     ] as const;
     }
 
     
-export const getGetPendingQueryOptions = <TData = Awaited<ReturnType<typeof getPending>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPending>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetPendingCreditsQueryOptions = <TData = Awaited<ReturnType<typeof getPendingCredits>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPendingCredits>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPendingQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetPendingCreditsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPending>>> = ({ signal }) => getPending(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPendingCredits>>> = ({ signal }) => getPendingCredits(requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPending>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPendingCredits>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetPendingQueryResult = NonNullable<Awaited<ReturnType<typeof getPending>>>
-export type GetPendingQueryError = ErrorType<unknown>
+export type GetPendingCreditsQueryResult = NonNullable<Awaited<ReturnType<typeof getPendingCredits>>>
+export type GetPendingCreditsQueryError = ErrorType<unknown>
 
 
-export function useGetPending<TData = Awaited<ReturnType<typeof getPending>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPending>>, TError, TData>> & Pick<
+export function useGetPendingCredits<TData = Awaited<ReturnType<typeof getPendingCredits>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPendingCredits>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPending>>,
+          Awaited<ReturnType<typeof getPendingCredits>>,
           TError,
-          Awaited<ReturnType<typeof getPending>>
+          Awaited<ReturnType<typeof getPendingCredits>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPending<TData = Awaited<ReturnType<typeof getPending>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPending>>, TError, TData>> & Pick<
+export function useGetPendingCredits<TData = Awaited<ReturnType<typeof getPendingCredits>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPendingCredits>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPending>>,
+          Awaited<ReturnType<typeof getPendingCredits>>,
           TError,
-          Awaited<ReturnType<typeof getPending>>
+          Awaited<ReturnType<typeof getPendingCredits>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPending<TData = Awaited<ReturnType<typeof getPending>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPending>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetPendingCredits<TData = Awaited<ReturnType<typeof getPendingCredits>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPendingCredits>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get customers with pending credits
  */
 
-export function useGetPending<TData = Awaited<ReturnType<typeof getPending>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPending>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetPendingCredits<TData = Awaited<ReturnType<typeof getPendingCredits>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPendingCredits>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetPendingQueryOptions(options)
+  const queryOptions = getGetPendingCreditsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -290,7 +290,7 @@ export function useGetPending<TData = Awaited<ReturnType<typeof getPending>>, TE
 /**
  * @summary Get credit payment history for a customer
  */
-export const getCustomerHistory = (
+export const getCustomerCreditHistory = (
     customerId: number,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -305,69 +305,69 @@ export const getCustomerHistory = (
 
 
 
-export const getGetCustomerHistoryQueryKey = (customerId?: number,) => {
+export const getGetCustomerCreditHistoryQueryKey = (customerId?: number,) => {
     return [
     `/api/credits/customers/${customerId}/history`
     ] as const;
     }
 
     
-export const getGetCustomerHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getCustomerHistory>>, TError = ErrorType<unknown>>(customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetCustomerCreditHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError = ErrorType<unknown>>(customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomerHistoryQueryKey(customerId);
+  const queryKey =  queryOptions?.queryKey ?? getGetCustomerCreditHistoryQueryKey(customerId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerHistory>>> = ({ signal }) => getCustomerHistory(customerId, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerCreditHistory>>> = ({ signal }) => getCustomerCreditHistory(customerId, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(customerId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomerHistory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(customerId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetCustomerHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerHistory>>>
-export type GetCustomerHistoryQueryError = ErrorType<unknown>
+export type GetCustomerCreditHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerCreditHistory>>>
+export type GetCustomerCreditHistoryQueryError = ErrorType<unknown>
 
 
-export function useGetCustomerHistory<TData = Awaited<ReturnType<typeof getCustomerHistory>>, TError = ErrorType<unknown>>(
- customerId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerHistory>>, TError, TData>> & Pick<
+export function useGetCustomerCreditHistory<TData = Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError = ErrorType<unknown>>(
+ customerId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerHistory>>,
+          Awaited<ReturnType<typeof getCustomerCreditHistory>>,
           TError,
-          Awaited<ReturnType<typeof getCustomerHistory>>
+          Awaited<ReturnType<typeof getCustomerCreditHistory>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerHistory<TData = Awaited<ReturnType<typeof getCustomerHistory>>, TError = ErrorType<unknown>>(
- customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerHistory>>, TError, TData>> & Pick<
+export function useGetCustomerCreditHistory<TData = Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError = ErrorType<unknown>>(
+ customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerHistory>>,
+          Awaited<ReturnType<typeof getCustomerCreditHistory>>,
           TError,
-          Awaited<ReturnType<typeof getCustomerHistory>>
+          Awaited<ReturnType<typeof getCustomerCreditHistory>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerHistory<TData = Awaited<ReturnType<typeof getCustomerHistory>>, TError = ErrorType<unknown>>(
- customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetCustomerCreditHistory<TData = Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError = ErrorType<unknown>>(
+ customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get credit payment history for a customer
  */
 
-export function useGetCustomerHistory<TData = Awaited<ReturnType<typeof getCustomerHistory>>, TError = ErrorType<unknown>>(
- customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetCustomerCreditHistory<TData = Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError = ErrorType<unknown>>(
+ customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerCreditHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetCustomerHistoryQueryOptions(customerId,options)
+  const queryOptions = getGetCustomerCreditHistoryQueryOptions(customerId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

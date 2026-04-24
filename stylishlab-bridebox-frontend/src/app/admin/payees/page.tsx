@@ -4,8 +4,8 @@ import { useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
-  useGetAll2,
-  useToggleStatus1,
+  useGetAllPayees,
+  useTogglePayeeStatus,
 } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,8 +38,8 @@ import { PayeeResponse } from "@/api/generated/model";
 import { cn } from "@/lib/utils";
 
 export default function PayeesPage() {
-  const { data: res, isLoading } = useGetAll2();
-  const toggleMutation = useToggleStatus1();
+  const { data: res, isLoading } = useGetAllPayees();
+  const toggleMutation = useTogglePayeeStatus();
   const queryClient = useQueryClient();
 
   const payees = (res?.data ?? []) as PayeeResponse[];

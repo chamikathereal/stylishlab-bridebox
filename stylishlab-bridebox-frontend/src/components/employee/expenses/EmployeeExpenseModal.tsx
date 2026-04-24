@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import {
-  useRecord,
-  useGetCategories,
+  useRecordExpense,
+  useGetExpenseCategories,
   useGetMyExpenses,
-  useUpdate2,
+  useUpdateExpense,
 } from "@/api/generated/endpoints/expense-management/expense-management";
-import { useGetAll2 as useGetPayees } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
+import { useGetAllPayees as useGetPayees } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,14 +124,14 @@ export function EmployeeExpenseModal({
   );
 
   // API Hooks
-  const { data: catRes } = useGetCategories({ query: { enabled: open } });
+  const { data: catRes } = useGetExpenseCategories({ query: { enabled: open } });
   const { data: payeeRes } = useGetPayees({ query: { enabled: open } });
   const { data: historyRes, isLoading: historyLoading } = useGetMyExpenses({
     query: { enabled: open },
   });
 
-  const recordMutation = useRecord();
-  const updateMutation = useUpdate2();
+  const recordMutation = useRecordExpense();
+  const updateMutation = useUpdateExpense();
 
   const categories = (catRes?.data ?? []) as ExpenseCategoryResponse[];
   const payees = (payeeRes?.data ?? []) as PayeeResponse[];

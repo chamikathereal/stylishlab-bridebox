@@ -4,10 +4,10 @@ import { useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
-  useGetAll5,
-  useCreate4,
-  useUpdate4,
-  useSearch,
+  useGetAllCustomers,
+  useCreateCustomer,
+  useUpdateCustomer,
+  useSearchCustomers,
 } from "@/api/generated/endpoints/customer-management/customer-management";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,13 +43,13 @@ import { CustomerResponse } from "@/api/generated/model";
 
 export default function CustomersPage() {
   const [searchName, setSearchName] = useState("");
-  const { data: allRes, isLoading } = useGetAll5();
-  const { data: searchRes } = useSearch(
+  const { data: allRes, isLoading } = useGetAllCustomers();
+  const { data: searchRes } = useSearchCustomers(
     { name: searchName },
     { query: { enabled: searchName.length > 1 } },
   );
-  const createMutation = useCreate4();
-  const updateMutation = useUpdate4();
+  const createMutation = useCreateCustomer();
+  const updateMutation = useUpdateCustomer();
   const queryClient = useQueryClient();
 
   const customers = (

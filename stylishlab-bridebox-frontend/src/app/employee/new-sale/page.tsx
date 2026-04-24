@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
-  useGetAll5 as useGetCustomers,
-  useCreate4 as useCreateCustomer,
-  useSearch,
+  useGetAllCustomers as useGetCustomers,
+  useCreateCustomer,
+  useSearchCustomers,
 } from "@/api/generated/endpoints/customer-management/customer-management";
-import { useGetActive as useGetActiveServices } from "@/api/generated/endpoints/service-packages/service-packages";
-import { useCreate1 as useRecordASale } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
+import { useGetActiveServices } from "@/api/generated/endpoints/service-packages/service-packages";
+import { useCreateSale as useRecordASale } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,7 +71,7 @@ export default function NewSalePage() {
     parseFloat(paidAmount) > (selectedService?.price ?? 0);
 
   const { data: allCustRes } = useGetCustomers();
-  const { data: searchRes } = useSearch(
+  const { data: searchRes } = useSearchCustomers(
     { name: searchName },
     { query: { enabled: searchName.length > 1 } },
   );

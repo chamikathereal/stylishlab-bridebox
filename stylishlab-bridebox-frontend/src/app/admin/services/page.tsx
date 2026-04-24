@@ -4,10 +4,10 @@ import { useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
-  useGetAll,
-  useCreate,
-  useUpdate,
-  useToggleStatus,
+  useGetAllServices,
+  useCreateService,
+  useUpdateService,
+  useToggleServiceStatus,
 } from "@/api/generated/endpoints/service-packages/service-packages";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,12 +41,15 @@ import {
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { ServiceResponse } from "@/api/generated/model";
+import { ServiceCommissionManager } from "@/components/admin/ServiceCommissionManager";
+import { PercentCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function ServicesPage() {
-  const { data: res, isLoading } = useGetAll();
-  const createMutation = useCreate();
-  const updateMutation = useUpdate();
-  const toggleMutation = useToggleStatus();
+  const { data: res, isLoading } = useGetAllServices();
+  const createMutation = useCreateService();
+  const updateMutation = useUpdateService();
+  const toggleMutation = useToggleServiceStatus();
   const queryClient = useQueryClient();
   const services = (res?.data ?? []) as ServiceResponse[];
 
@@ -60,6 +63,8 @@ export default function ServicesPage() {
   const [editingService, setEditingService] = useState<ServiceResponse | null>(
     null,
   );
+  const [commissionTarget, setCommissionTarget] =
+    useState<ServiceResponse | null>(null);
 
   const resetForm = () => {
     setForm({ serviceName: "", price: "", description: "" });
@@ -233,48 +238,71 @@ export default function ServicesPage() {
       {viewMode === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {services.map((svc) => (
-            <Card key={svc.id} className="glass-card-hover group">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Scissors className="w-5 h-5 text-primary" />
+            <Card
+              key={svc.id}
+              className="glass-card-hover border-teal-500/10 overflow-hidden"
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-600">
+                      <Scissors className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm leading-tight">
+                        {svc.serviceName}
+                      </h3>
+                      <Badge
+                        variant={svc.isActive ? "default" : "secondary"}
+                        className={cn(
+                          "mt-1 text-[10px] h-4 px-1.5",
+                          svc.isActive
+                            ? "bg-teal-500/10 text-teal-600 border-none"
+                            : "",
+                        )}
+                      >
+                        {svc.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
                   </div>
-                  <Badge variant={svc.isActive ? "default" : "secondary"}>
-                    {svc.isActive ? "Active" : "Inactive"}
-                  </Badge>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 rounded-full hover:bg-teal-500/10"
+                    onClick={() => svc.id && handleToggle(svc.id)}
+                    title={svc.isActive ? "Deactivate" : "Activate"}
+                  >
+                    {svc.isActive ? (
+                      <ToggleRight className="w-5 h-5 text-teal-500" />
+                    ) : (
+                      <ToggleLeft className="w-5 h-5 text-muted-foreground" />
+                    )}
+                  </Button>
                 </div>
-                <h3 className="font-semibold mb-1">{svc.serviceName}</h3>
-                {svc.description && (
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {svc.description}
-                  </p>
-                )}
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-xl font-bold gradient-text">
+
+                <div className="mb-5">
+                  <span className="text-2xl font-bold text-teal-500">
                     Rs. {svc.price?.toLocaleString()}
                   </span>
-                  <div className="flex gap-1 items-center">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 rounded-full"
-                      onClick={() => handleOpenEdit(svc)}
-                    >
-                      <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 rounded-full"
-                      onClick={() => handleToggle(svc.id!)}
-                    >
-                      {svc.isActive ? (
-                        <ToggleRight className="w-5 h-5 text-emerald-500" />
-                      ) : (
-                        <ToggleLeft className="w-5 h-5 text-muted-foreground" />
-                      )}
-                    </Button>
-                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-xs h-9 border-teal-500/20 hover:bg-teal-500/5 font-medium"
+                    onClick={() => handleOpenEdit(svc)}
+                  >
+                    <Pencil className="w-3.5 h-3.5 mr-2" /> Edit Service Details
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="w-full text-xs h-9 bg-teal-500/10 text-teal-600 hover:bg-teal-500/20 border-none font-medium"
+                    onClick={() => setCommissionTarget(svc)}
+                  >
+                    <PercentCircle className="w-3.5 h-3.5 mr-2" /> Manage Commissions
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -321,6 +349,15 @@ export default function ServicesPage() {
                         <Button
                           size="icon"
                           variant="ghost"
+                          title="Manage Commissions"
+                          className="h-8 w-8 rounded-full text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                          onClick={() => setCommissionTarget(svc)}
+                        >
+                          <PercentCircle className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
                           className="h-8 w-8 rounded-full"
                           onClick={() => handleOpenEdit(svc)}
                         >
@@ -347,6 +384,25 @@ export default function ServicesPage() {
           </CardContent>
         </Card>
       )}
+      <Dialog
+        open={!!commissionTarget}
+        onOpenChange={(o) => !o && setCommissionTarget(null)}
+      >
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>
+              Manage Employee Commissions: {commissionTarget?.serviceName}
+            </DialogTitle>
+          </DialogHeader>
+          {commissionTarget?.id && (
+            <ServiceCommissionManager
+              serviceId={commissionTarget.id}
+              title={commissionTarget.serviceName || ""}
+              servicePrice={commissionTarget.price}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

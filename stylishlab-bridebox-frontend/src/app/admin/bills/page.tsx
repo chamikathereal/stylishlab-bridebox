@@ -4,11 +4,11 @@ import React, { useState, useEffect } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
-  useGetAll6,
-  useCreate5,
-  useSettle,
-  useUpdate5,
-  useDelete1,
+  useGetAllBills,
+  useCreateBill,
+  useSettleBill,
+  useUpdateBill,
+  useDeleteBill,
 } from "@/api/generated/endpoints/monthly-bills/monthly-bills";
 import { useGetAllActive } from "@/api/generated/endpoints/bill-categories/bill-categories";
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,7 @@ export default function BillsPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  const { data: res, isLoading } = useGetAll6(
+  const { data: res, isLoading } = useGetAllBills(
     {
       search: debouncedSearch || undefined,
       page: currentPage - 1,
@@ -54,10 +54,10 @@ export default function BillsPage() {
   );
 
   const { data: catRes } = useGetAllActive();
-  const createMutation = useCreate5();
-  const updateMutation = useUpdate5();
-  const deleteMutation = useDelete1();
-  const settleMutation = useSettle();
+  const createMutation = useCreateBill();
+  const updateMutation = useUpdateBill();
+  const deleteMutation = useDeleteBill();
+  const settleMutation = useSettleBill();
   const queryClient = useQueryClient();
 
   const bills = React.useMemo(

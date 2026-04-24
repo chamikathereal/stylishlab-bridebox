@@ -4,14 +4,14 @@ import React, { useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
-  useGetAll3,
-  useRecord,
-  useGetCategories,
-  useUpdate2,
-  useDelete,
-  useGetByDateRange1,
+  useGetAllExpenses,
+  useRecordExpense,
+  useGetExpenseCategories,
+  useUpdateExpense,
+  useDeleteExpense,
+  useGetExpensesByDateRange,
 } from "@/api/generated/endpoints/expense-management/expense-management";
-import { useGetAll2 as useGetPayees } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
+import { useGetAllPayees as useGetPayees } from "@/api/generated/endpoints/payee-debtor-management/payee-debtor-management";
 import {
   useDaily,
   useWeekly,
@@ -51,11 +51,11 @@ const COMMON_REASONS = [
 ];
 
 export default function ExpensesPage() {
-  const { data: catRes } = useGetCategories();
+  const { data: catRes } = useGetExpenseCategories();
   const { data: payeeRes } = useGetPayees();
-  const createMutation = useRecord();
-  const updateMutation = useUpdate2();
-  const deleteMutation = useDelete();
+  const createMutation = useRecordExpense();
+  const updateMutation = useUpdateExpense();
+  const deleteMutation = useDeleteExpense();
 
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -124,7 +124,7 @@ export default function ExpensesPage() {
   } = usePeriodFilter({ initialPeriod: "daily" });
 
   // Expenses Queries
-  const expensesAllQuery = useGetAll3(
+  const expensesAllQuery = useGetAllExpenses(
     {
       search: debouncedFilter,
       pageable: {
@@ -141,7 +141,7 @@ export default function ExpensesPage() {
     },
   );
 
-  const expensesRangeQuery = useGetByDateRange1(
+  const expensesRangeQuery = useGetExpensesByDateRange(
     {
       from: dateRange.from,
       to: dateRange.to,

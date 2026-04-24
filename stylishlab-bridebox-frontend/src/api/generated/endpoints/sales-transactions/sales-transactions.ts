@@ -29,8 +29,8 @@ import type {
   ApiResponsePageSaleResponse,
   ApiResponseSaleResponse,
   CreateSaleRequest,
-  GetAll1Params,
-  GetByDateRangeParams
+  GetAllSalesParams,
+  GetSalesByDateRangeParams
 } from '../../model';
 
 import { customInstance } from '../../../axios-instance';
@@ -44,8 +44,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 /**
  * @summary Get all sales
  */
-export const getAll1 = (
-    params?: GetAll1Params,
+export const getAllSales = (
+    params?: GetAllSalesParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
@@ -60,69 +60,69 @@ export const getAll1 = (
 
 
 
-export const getGetAll1QueryKey = (params?: GetAll1Params,) => {
+export const getGetAllSalesQueryKey = (params?: GetAllSalesParams,) => {
     return [
     `/api/sales`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAll1QueryOptions = <TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(params?: GetAll1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetAllSalesQueryOptions = <TData = Awaited<ReturnType<typeof getAllSales>>, TError = ErrorType<unknown>>(params?: GetAllSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSales>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAll1QueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetAllSalesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAll1>>> = ({ signal }) => getAll1(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllSales>>> = ({ signal }) => getAllSales(params, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllSales>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAll1QueryResult = NonNullable<Awaited<ReturnType<typeof getAll1>>>
-export type GetAll1QueryError = ErrorType<unknown>
+export type GetAllSalesQueryResult = NonNullable<Awaited<ReturnType<typeof getAllSales>>>
+export type GetAllSalesQueryError = ErrorType<unknown>
 
 
-export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(
- params: undefined |  GetAll1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>> & Pick<
+export function useGetAllSales<TData = Awaited<ReturnType<typeof getAllSales>>, TError = ErrorType<unknown>>(
+ params: undefined |  GetAllSalesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSales>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAll1>>,
+          Awaited<ReturnType<typeof getAllSales>>,
           TError,
-          Awaited<ReturnType<typeof getAll1>>
+          Awaited<ReturnType<typeof getAllSales>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(
- params?: GetAll1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>> & Pick<
+export function useGetAllSales<TData = Awaited<ReturnType<typeof getAllSales>>, TError = ErrorType<unknown>>(
+ params?: GetAllSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSales>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAll1>>,
+          Awaited<ReturnType<typeof getAllSales>>,
           TError,
-          Awaited<ReturnType<typeof getAll1>>
+          Awaited<ReturnType<typeof getAllSales>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(
- params?: GetAll1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetAllSales<TData = Awaited<ReturnType<typeof getAllSales>>, TError = ErrorType<unknown>>(
+ params?: GetAllSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSales>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get all sales
  */
 
-export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError = ErrorType<unknown>>(
- params?: GetAll1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAll1>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetAllSales<TData = Awaited<ReturnType<typeof getAllSales>>, TError = ErrorType<unknown>>(
+ params?: GetAllSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllSales>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAll1QueryOptions(params,options)
+  const queryOptions = getGetAllSalesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -137,7 +137,7 @@ export function useGetAll1<TData = Awaited<ReturnType<typeof getAll1>>, TError =
  * Creates sale with price and commission snapshots frozen at time of recording
  * @summary Record a sale
  */
-export const create1 = (
+export const createSale = (
     createSaleRequest: BodyType<CreateSaleRequest>,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -153,11 +153,11 @@ export const create1 = (
   
 
 
-export const getCreate1MutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create1>>, TError,{data: BodyType<CreateSaleRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof create1>>, TError,{data: BodyType<CreateSaleRequest>}, TContext> => {
+export const getCreateSaleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSale>>, TError,{data: BodyType<CreateSaleRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSale>>, TError,{data: BodyType<CreateSaleRequest>}, TContext> => {
 
-const mutationKey = ['create1'];
+const mutationKey = ['createSale'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -167,10 +167,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof create1>>, {data: BodyType<CreateSaleRequest>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSale>>, {data: BodyType<CreateSaleRequest>}> = (props) => {
           const {data} = props ?? {};
 
-          return  create1(data,requestOptions)
+          return  createSale(data,requestOptions)
         }
 
         
@@ -178,30 +178,30 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type Create1MutationResult = NonNullable<Awaited<ReturnType<typeof create1>>>
-    export type Create1MutationBody = BodyType<CreateSaleRequest>
-    export type Create1MutationError = ErrorType<unknown>
+    export type CreateSaleMutationResult = NonNullable<Awaited<ReturnType<typeof createSale>>>
+    export type CreateSaleMutationBody = BodyType<CreateSaleRequest>
+    export type CreateSaleMutationError = ErrorType<unknown>
 
     /**
  * @summary Record a sale
  */
-export const useCreate1 = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof create1>>, TError,{data: BodyType<CreateSaleRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+export const useCreateSale = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSale>>, TError,{data: BodyType<CreateSaleRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof create1>>,
+        Awaited<ReturnType<typeof createSale>>,
         TError,
         {data: BodyType<CreateSaleRequest>},
         TContext
       > => {
 
-      const mutationOptions = getCreate1MutationOptions(options);
+      const mutationOptions = getCreateSaleMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Get sale by ID
  */
-export const getById5 = (
+export const getSaleById = (
     id: number,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -216,69 +216,69 @@ export const getById5 = (
 
 
 
-export const getGetById5QueryKey = (id?: number,) => {
+export const getGetSaleByIdQueryKey = (id?: number,) => {
     return [
     `/api/sales/${id}`
     ] as const;
     }
 
     
-export const getGetById5QueryOptions = <TData = Awaited<ReturnType<typeof getById5>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById5>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetSaleByIdQueryOptions = <TData = Awaited<ReturnType<typeof getSaleById>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleById>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetById5QueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetSaleByIdQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getById5>>> = ({ signal }) => getById5(id, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSaleById>>> = ({ signal }) => getSaleById(id, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getById5>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSaleById>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetById5QueryResult = NonNullable<Awaited<ReturnType<typeof getById5>>>
-export type GetById5QueryError = ErrorType<unknown>
+export type GetSaleByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getSaleById>>>
+export type GetSaleByIdQueryError = ErrorType<unknown>
 
 
-export function useGetById5<TData = Awaited<ReturnType<typeof getById5>>, TError = ErrorType<unknown>>(
- id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById5>>, TError, TData>> & Pick<
+export function useGetSaleById<TData = Awaited<ReturnType<typeof getSaleById>>, TError = ErrorType<unknown>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleById>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getById5>>,
+          Awaited<ReturnType<typeof getSaleById>>,
           TError,
-          Awaited<ReturnType<typeof getById5>>
+          Awaited<ReturnType<typeof getSaleById>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetById5<TData = Awaited<ReturnType<typeof getById5>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById5>>, TError, TData>> & Pick<
+export function useGetSaleById<TData = Awaited<ReturnType<typeof getSaleById>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleById>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getById5>>,
+          Awaited<ReturnType<typeof getSaleById>>,
           TError,
-          Awaited<ReturnType<typeof getById5>>
+          Awaited<ReturnType<typeof getSaleById>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetById5<TData = Awaited<ReturnType<typeof getById5>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById5>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSaleById<TData = Awaited<ReturnType<typeof getSaleById>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleById>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get sale by ID
  */
 
-export function useGetById5<TData = Awaited<ReturnType<typeof getById5>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getById5>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSaleById<TData = Awaited<ReturnType<typeof getSaleById>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSaleById>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetById5QueryOptions(id,options)
+  const queryOptions = getGetSaleByIdQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -292,7 +292,7 @@ export function useGetById5<TData = Awaited<ReturnType<typeof getById5>>, TError
 /**
  * @summary Get sales by employee
  */
-export const getByEmployee = (
+export const getSalesByEmployee = (
     employeeId: number,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -307,69 +307,69 @@ export const getByEmployee = (
 
 
 
-export const getGetByEmployeeQueryKey = (employeeId?: number,) => {
+export const getGetSalesByEmployeeQueryKey = (employeeId?: number,) => {
     return [
     `/api/sales/employee/${employeeId}`
     ] as const;
     }
 
     
-export const getGetByEmployeeQueryOptions = <TData = Awaited<ReturnType<typeof getByEmployee>>, TError = ErrorType<unknown>>(employeeId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetSalesByEmployeeQueryOptions = <TData = Awaited<ReturnType<typeof getSalesByEmployee>>, TError = ErrorType<unknown>>(employeeId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetByEmployeeQueryKey(employeeId);
+  const queryKey =  queryOptions?.queryKey ?? getGetSalesByEmployeeQueryKey(employeeId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getByEmployee>>> = ({ signal }) => getByEmployee(employeeId, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSalesByEmployee>>> = ({ signal }) => getSalesByEmployee(employeeId, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(employeeId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getByEmployee>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(employeeId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSalesByEmployee>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetByEmployeeQueryResult = NonNullable<Awaited<ReturnType<typeof getByEmployee>>>
-export type GetByEmployeeQueryError = ErrorType<unknown>
+export type GetSalesByEmployeeQueryResult = NonNullable<Awaited<ReturnType<typeof getSalesByEmployee>>>
+export type GetSalesByEmployeeQueryError = ErrorType<unknown>
 
 
-export function useGetByEmployee<TData = Awaited<ReturnType<typeof getByEmployee>>, TError = ErrorType<unknown>>(
- employeeId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByEmployee>>, TError, TData>> & Pick<
+export function useGetSalesByEmployee<TData = Awaited<ReturnType<typeof getSalesByEmployee>>, TError = ErrorType<unknown>>(
+ employeeId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByEmployee>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getByEmployee>>,
+          Awaited<ReturnType<typeof getSalesByEmployee>>,
           TError,
-          Awaited<ReturnType<typeof getByEmployee>>
+          Awaited<ReturnType<typeof getSalesByEmployee>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetByEmployee<TData = Awaited<ReturnType<typeof getByEmployee>>, TError = ErrorType<unknown>>(
- employeeId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByEmployee>>, TError, TData>> & Pick<
+export function useGetSalesByEmployee<TData = Awaited<ReturnType<typeof getSalesByEmployee>>, TError = ErrorType<unknown>>(
+ employeeId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByEmployee>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getByEmployee>>,
+          Awaited<ReturnType<typeof getSalesByEmployee>>,
           TError,
-          Awaited<ReturnType<typeof getByEmployee>>
+          Awaited<ReturnType<typeof getSalesByEmployee>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetByEmployee<TData = Awaited<ReturnType<typeof getByEmployee>>, TError = ErrorType<unknown>>(
- employeeId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSalesByEmployee<TData = Awaited<ReturnType<typeof getSalesByEmployee>>, TError = ErrorType<unknown>>(
+ employeeId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get sales by employee
  */
 
-export function useGetByEmployee<TData = Awaited<ReturnType<typeof getByEmployee>>, TError = ErrorType<unknown>>(
- employeeId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSalesByEmployee<TData = Awaited<ReturnType<typeof getSalesByEmployee>>, TError = ErrorType<unknown>>(
+ employeeId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetByEmployeeQueryOptions(employeeId,options)
+  const queryOptions = getGetSalesByEmployeeQueryOptions(employeeId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -383,8 +383,8 @@ export function useGetByEmployee<TData = Awaited<ReturnType<typeof getByEmployee
 /**
  * @summary Get sales by date range
  */
-export const getByDateRange = (
-    params: GetByDateRangeParams,
+export const getSalesByDateRange = (
+    params: GetSalesByDateRangeParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
       
@@ -399,69 +399,69 @@ export const getByDateRange = (
 
 
 
-export const getGetByDateRangeQueryKey = (params?: GetByDateRangeParams,) => {
+export const getGetSalesByDateRangeQueryKey = (params?: GetSalesByDateRangeParams,) => {
     return [
     `/api/sales/date-range`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetByDateRangeQueryOptions = <TData = Awaited<ReturnType<typeof getByDateRange>>, TError = ErrorType<unknown>>(params: GetByDateRangeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByDateRange>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetSalesByDateRangeQueryOptions = <TData = Awaited<ReturnType<typeof getSalesByDateRange>>, TError = ErrorType<unknown>>(params: GetSalesByDateRangeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByDateRange>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetByDateRangeQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetSalesByDateRangeQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getByDateRange>>> = ({ signal }) => getByDateRange(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSalesByDateRange>>> = ({ signal }) => getSalesByDateRange(params, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getByDateRange>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSalesByDateRange>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetByDateRangeQueryResult = NonNullable<Awaited<ReturnType<typeof getByDateRange>>>
-export type GetByDateRangeQueryError = ErrorType<unknown>
+export type GetSalesByDateRangeQueryResult = NonNullable<Awaited<ReturnType<typeof getSalesByDateRange>>>
+export type GetSalesByDateRangeQueryError = ErrorType<unknown>
 
 
-export function useGetByDateRange<TData = Awaited<ReturnType<typeof getByDateRange>>, TError = ErrorType<unknown>>(
- params: GetByDateRangeParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByDateRange>>, TError, TData>> & Pick<
+export function useGetSalesByDateRange<TData = Awaited<ReturnType<typeof getSalesByDateRange>>, TError = ErrorType<unknown>>(
+ params: GetSalesByDateRangeParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByDateRange>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getByDateRange>>,
+          Awaited<ReturnType<typeof getSalesByDateRange>>,
           TError,
-          Awaited<ReturnType<typeof getByDateRange>>
+          Awaited<ReturnType<typeof getSalesByDateRange>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetByDateRange<TData = Awaited<ReturnType<typeof getByDateRange>>, TError = ErrorType<unknown>>(
- params: GetByDateRangeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByDateRange>>, TError, TData>> & Pick<
+export function useGetSalesByDateRange<TData = Awaited<ReturnType<typeof getSalesByDateRange>>, TError = ErrorType<unknown>>(
+ params: GetSalesByDateRangeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByDateRange>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getByDateRange>>,
+          Awaited<ReturnType<typeof getSalesByDateRange>>,
           TError,
-          Awaited<ReturnType<typeof getByDateRange>>
+          Awaited<ReturnType<typeof getSalesByDateRange>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetByDateRange<TData = Awaited<ReturnType<typeof getByDateRange>>, TError = ErrorType<unknown>>(
- params: GetByDateRangeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByDateRange>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSalesByDateRange<TData = Awaited<ReturnType<typeof getSalesByDateRange>>, TError = ErrorType<unknown>>(
+ params: GetSalesByDateRangeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByDateRange>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get sales by date range
  */
 
-export function useGetByDateRange<TData = Awaited<ReturnType<typeof getByDateRange>>, TError = ErrorType<unknown>>(
- params: GetByDateRangeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByDateRange>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSalesByDateRange<TData = Awaited<ReturnType<typeof getSalesByDateRange>>, TError = ErrorType<unknown>>(
+ params: GetSalesByDateRangeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByDateRange>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetByDateRangeQueryOptions(params,options)
+  const queryOptions = getGetSalesByDateRangeQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -475,7 +475,7 @@ export function useGetByDateRange<TData = Awaited<ReturnType<typeof getByDateRan
 /**
  * @summary Get sales by customer
  */
-export const getByCustomer = (
+export const getSalesByCustomer = (
     customerId: number,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -490,69 +490,69 @@ export const getByCustomer = (
 
 
 
-export const getGetByCustomerQueryKey = (customerId?: number,) => {
+export const getGetSalesByCustomerQueryKey = (customerId?: number,) => {
     return [
     `/api/sales/customer/${customerId}`
     ] as const;
     }
 
     
-export const getGetByCustomerQueryOptions = <TData = Awaited<ReturnType<typeof getByCustomer>>, TError = ErrorType<unknown>>(customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByCustomer>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetSalesByCustomerQueryOptions = <TData = Awaited<ReturnType<typeof getSalesByCustomer>>, TError = ErrorType<unknown>>(customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByCustomer>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetByCustomerQueryKey(customerId);
+  const queryKey =  queryOptions?.queryKey ?? getGetSalesByCustomerQueryKey(customerId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getByCustomer>>> = ({ signal }) => getByCustomer(customerId, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSalesByCustomer>>> = ({ signal }) => getSalesByCustomer(customerId, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(customerId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getByCustomer>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(customerId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSalesByCustomer>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetByCustomerQueryResult = NonNullable<Awaited<ReturnType<typeof getByCustomer>>>
-export type GetByCustomerQueryError = ErrorType<unknown>
+export type GetSalesByCustomerQueryResult = NonNullable<Awaited<ReturnType<typeof getSalesByCustomer>>>
+export type GetSalesByCustomerQueryError = ErrorType<unknown>
 
 
-export function useGetByCustomer<TData = Awaited<ReturnType<typeof getByCustomer>>, TError = ErrorType<unknown>>(
- customerId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByCustomer>>, TError, TData>> & Pick<
+export function useGetSalesByCustomer<TData = Awaited<ReturnType<typeof getSalesByCustomer>>, TError = ErrorType<unknown>>(
+ customerId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByCustomer>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getByCustomer>>,
+          Awaited<ReturnType<typeof getSalesByCustomer>>,
           TError,
-          Awaited<ReturnType<typeof getByCustomer>>
+          Awaited<ReturnType<typeof getSalesByCustomer>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetByCustomer<TData = Awaited<ReturnType<typeof getByCustomer>>, TError = ErrorType<unknown>>(
- customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByCustomer>>, TError, TData>> & Pick<
+export function useGetSalesByCustomer<TData = Awaited<ReturnType<typeof getSalesByCustomer>>, TError = ErrorType<unknown>>(
+ customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByCustomer>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getByCustomer>>,
+          Awaited<ReturnType<typeof getSalesByCustomer>>,
           TError,
-          Awaited<ReturnType<typeof getByCustomer>>
+          Awaited<ReturnType<typeof getSalesByCustomer>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetByCustomer<TData = Awaited<ReturnType<typeof getByCustomer>>, TError = ErrorType<unknown>>(
- customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByCustomer>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSalesByCustomer<TData = Awaited<ReturnType<typeof getSalesByCustomer>>, TError = ErrorType<unknown>>(
+ customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByCustomer>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get sales by customer
  */
 
-export function useGetByCustomer<TData = Awaited<ReturnType<typeof getByCustomer>>, TError = ErrorType<unknown>>(
- customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getByCustomer>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetSalesByCustomer<TData = Awaited<ReturnType<typeof getSalesByCustomer>>, TError = ErrorType<unknown>>(
+ customerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalesByCustomer>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetByCustomerQueryOptions(customerId,options)
+  const queryOptions = getGetSalesByCustomerQueryOptions(customerId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

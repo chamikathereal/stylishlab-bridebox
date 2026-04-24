@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetAll1Params = {
+export type GetSalesByDateRangeParams = {
+from: string;
+to: string;
 search?: string;
 page?: number;
 size?: number;

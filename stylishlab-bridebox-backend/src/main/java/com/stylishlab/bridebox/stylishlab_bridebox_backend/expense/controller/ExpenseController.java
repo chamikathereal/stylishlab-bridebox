@@ -27,14 +27,14 @@ public class ExpenseController {
     private final ExpenseService expenseService;
 
     @PostMapping
-    @Operation(summary = "Record expense", description = "Both employees and admin can record expenses")
+    @Operation(summary = "Record expense", operationId = "recordExpense", description = "Both employees and admin can record expenses")
     public ResponseEntity<ApiResponse<ExpenseResponse>> record(@Valid @RequestBody CreateExpenseRequest request, Authentication auth) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Expense recorded", expenseService.recordExpense(request, auth.getName())));
     }
 
     @GetMapping
-    @Operation(summary = "Get all expenses")
+    @Operation(summary = "Get all expenses", operationId = "getAllExpenses")
     public ResponseEntity<ApiResponse<Page<ExpenseResponse>>> getAll(
             @RequestParam(required = false) String search,
             Pageable pageable) {
@@ -42,19 +42,19 @@ public class ExpenseController {
     }
 
     @GetMapping("/categories")
-    @Operation(summary = "Get expense categories")
+    @Operation(summary = "Get expense categories", operationId = "getExpenseCategories")
     public ResponseEntity<ApiResponse<List<ExpenseCategoryResponse>>> getCategories() {
         return ResponseEntity.ok(ApiResponse.ok(expenseService.getCategories()));
     }
 
     @GetMapping("/my")
-    @Operation(summary = "Get current user's expenses")
+    @Operation(summary = "Get current user's expenses", operationId = "getMyExpenses")
     public ResponseEntity<ApiResponse<List<ExpenseResponse>>> getMyExpenses(Authentication auth) {
         return ResponseEntity.ok(ApiResponse.ok(expenseService.getExpensesByUser(auth.getName())));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update expense", description = "Employees can only update same-day expenses they recorded")
+    @Operation(summary = "Update expense", operationId = "updateExpense", description = "Employees can only update same-day expenses they recorded")
     public ResponseEntity<ApiResponse<ExpenseResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UpdateExpenseRequest request,
@@ -63,14 +63,14 @@ public class ExpenseController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete expense", description = "Employees can only delete same-day expenses they recorded")
+    @Operation(summary = "Delete expense", operationId = "deleteExpense", description = "Employees can only delete same-day expenses they recorded")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id, Authentication auth) {
         expenseService.deleteExpense(id, auth.getName());
         return ResponseEntity.ok(ApiResponse.ok("Expense deleted", null));
     }
 
     @GetMapping("/date-range")
-    @Operation(summary = "Get expenses by date range")
+    @Operation(summary = "Get expenses by date range", operationId = "getExpensesByDateRange")
     public ResponseEntity<ApiResponse<Page<ExpenseResponse>>> getByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,

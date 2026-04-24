@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { useGetAll5, useCreate4, useSearch } from '@/api/generated/endpoints/customer-management/customer-management';
+import { useGetAllCustomers, useCreateCustomer, useSearchCustomers } from '@/api/generated/endpoints/customer-management/customer-management';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,9 +17,9 @@ export default function EmployeeCustomersPage() {
   const [showNew, setShowNew] = useState(false);
   const [newName, setNewName] = useState('');
   const [newMobile, setNewMobile] = useState('');
-  const { data: allRes, isLoading } = useGetAll5();
-  const { data: searchRes } = useSearch({ name: searchName }, { query: { enabled: searchName.length > 1 } });
-  const createMutation = useCreate4();
+  const { data: allRes, isLoading } = useGetAllCustomers();
+  const { data: searchRes } = useSearchCustomers({ name: searchName }, { query: { enabled: searchName.length > 1 } });
+  const createMutation = useCreateCustomer();
   const queryClient = useQueryClient();
 
   const customers = (searchName.length > 1 ? (searchRes?.data ?? []) : (allRes?.data ?? [])) as CustomerResponse[];

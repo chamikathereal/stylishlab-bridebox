@@ -22,7 +22,7 @@ public class CreditController {
     private final CreditService creditService;
 
     @PostMapping("/sales/{saleId}/payments")
-    @Operation(summary = "Record credit payment", description = "Record a payment against a credit or partially paid sale")
+    @Operation(summary = "Record credit payment", operationId = "recordCreditPayment", description = "Record a payment against a credit or partially paid sale")
     public ResponseEntity<ApiResponse<CreditPaymentResponse>> recordPayment(
             @PathVariable Long saleId,
             @Valid @RequestBody RecordCreditPaymentRequest request,
@@ -32,19 +32,19 @@ public class CreditController {
     }
 
     @GetMapping("/pending")
-    @Operation(summary = "Get customers with pending credits")
+    @Operation(summary = "Get customers with pending credits", operationId = "getPendingCredits")
     public ResponseEntity<ApiResponse<List<CustomerCreditSummaryResponse>>> getPending() {
         return ResponseEntity.ok(ApiResponse.ok(creditService.getPendingCredits()));
     }
 
     @GetMapping("/sales/{saleId}/history")
-    @Operation(summary = "Get credit payment history for a sale")
+    @Operation(summary = "Get credit payment history for a sale", operationId = "getSaleCreditHistory")
     public ResponseEntity<ApiResponse<List<CreditPaymentResponse>>> getSaleHistory(@PathVariable Long saleId) {
         return ResponseEntity.ok(ApiResponse.ok(creditService.getCreditHistoryForSale(saleId)));
     }
 
     @GetMapping("/customers/{customerId}/history")
-    @Operation(summary = "Get credit payment history for a customer")
+    @Operation(summary = "Get credit payment history for a customer", operationId = "getCustomerCreditHistory")
     public ResponseEntity<ApiResponse<List<CreditPaymentResponse>>> getCustomerHistory(@PathVariable Long customerId) {
         return ResponseEntity.ok(ApiResponse.ok(creditService.getCreditHistoryForCustomer(customerId)));
     }

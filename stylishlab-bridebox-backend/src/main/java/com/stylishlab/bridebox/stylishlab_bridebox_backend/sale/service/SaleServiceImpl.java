@@ -1,5 +1,6 @@
 package com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.service;
 
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.enums.CommissionType;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.enums.PaymentStatus;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.exception.BadRequestException;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.exception.ResourceNotFoundException;
@@ -15,7 +16,9 @@ import com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.repository.SaleR
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.user.repository.UserRepository;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.payroll.service.PayrollService;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.service.entity.SalonService;
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.service.entity.ServiceCommission;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.service.repository.SalonServiceRepository;
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.service.repository.ServiceCommissionRepository;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +33,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +45,7 @@ public class SaleServiceImpl implements SaleService {
     private final EmployeeRepository employeeRepository;
     private final SalonServiceRepository salonServiceRepository;
     private final EmployeeCommissionRepository commissionRepository;
+    private final ServiceCommissionRepository serviceCommissionRepository;
     private final UserRepository userRepository;
     private final PayrollService payrollService;
 
@@ -60,19 +65,44 @@ public class SaleServiceImpl implements SaleService {
         User createdBy = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
 
-        // Get current commission for the employee
-        EmployeeCommission commission = commissionRepository.findCurrentCommission(employee.getId())
-                .orElseThrow(() -> new BadRequestException("No active commission found for employee: " + employee.getFullName()));
-
-        // Snapshot values
+        // PRIORITY: Service-specific commission > Default employee commission
         BigDecimal servicePrice = service.getPrice();
-        BigDecimal employeePercent = commission.getEmployeePercent();
-        BigDecimal ownerPercent = commission.getOwnerPercent();
+        BigDecimal employeePercent;
+        BigDecimal ownerPercent;
+        BigDecimal employeeAmount;
+        BigDecimal ownerAmount;
 
-        // Calculate amounts
-        BigDecimal employeeAmount = servicePrice.multiply(employeePercent)
-                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-        BigDecimal ownerAmount = servicePrice.subtract(employeeAmount);
+        Optional<ServiceCommission> serviceCommission = serviceCommissionRepository
+                .findByEmployeeIdAndServiceId(employee.getId(), service.getId());
+
+        if (serviceCommission.isPresent()) {
+            ServiceCommission sc = serviceCommission.get();
+            if (sc.getCommissionType() == CommissionType.FIXED_AMOUNT) {
+                // Fixed amount mode — use stored amounts directly
+                employeeAmount = sc.getEmployeeFixedAmount();
+                ownerAmount = sc.getOwnerFixedAmount();
+                // Store equivalent percentages in snapshot for reporting
+                employeePercent = employeeAmount.multiply(new BigDecimal("100"))
+                        .divide(servicePrice, 2, RoundingMode.HALF_UP);
+                ownerPercent = new BigDecimal("100").subtract(employeePercent);
+            } else {
+                // Percentage mode — calculate from service price
+                employeePercent = sc.getEmployeePercent();
+                ownerPercent = sc.getOwnerPercent();
+                employeeAmount = servicePrice.multiply(employeePercent)
+                        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+                ownerAmount = servicePrice.subtract(employeeAmount);
+            }
+        } else {
+            // Fallback to default employee commission
+            EmployeeCommission commission = commissionRepository.findCurrentCommission(employee.getId())
+                    .orElseThrow(() -> new BadRequestException("No active commission found for employee: " + employee.getFullName()));
+            employeePercent = commission.getEmployeePercent();
+            ownerPercent = commission.getOwnerPercent();
+            employeeAmount = servicePrice.multiply(employeePercent)
+                    .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            ownerAmount = servicePrice.subtract(employeeAmount);
+        }
 
         // Handle payment
         BigDecimal paidAmount;

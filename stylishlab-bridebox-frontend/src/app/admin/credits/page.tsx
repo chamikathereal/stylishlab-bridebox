@@ -4,10 +4,10 @@ import { useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
-  useGetPending,
-  useRecordPayment,
+  useGetPendingCredits,
+  useRecordCreditPayment,
 } from "@/api/generated/endpoints/credit-management/credit-management";
-import { useGetAll1 } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
+import { useGetAllSales } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,9 +53,9 @@ function formatCurrency(val?: number) {
 
 export default function CreditsPage() {
   const queryClient = useQueryClient();
-  const { data: pendingRes, isLoading: isPendingLoading } = useGetPending();
-  const { data: salesRes, isLoading: isSalesLoading } = useGetAll1();
-  const payMutation = useRecordPayment();
+  const { data: pendingRes, isLoading: isPendingLoading } = useGetPendingCredits();
+  const { data: salesRes, isLoading: isSalesLoading } = useGetAllSales();
+  const payMutation = useRecordCreditPayment();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [payDialog, setPayDialog] = useState<{

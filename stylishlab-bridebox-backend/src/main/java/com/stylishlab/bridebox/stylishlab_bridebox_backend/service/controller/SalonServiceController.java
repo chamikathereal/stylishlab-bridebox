@@ -22,38 +22,38 @@ public class SalonServiceController {
     private final SalonServiceService salonServiceService;
 
     @PostMapping
-    @Operation(summary = "Create service package")
+    @Operation(summary = "Create service package", operationId = "createService")
     public ResponseEntity<ApiResponse<ServiceResponse>> create(@Valid @RequestBody CreateServiceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Service created", salonServiceService.create(request)));
     }
 
     @GetMapping
-    @Operation(summary = "Get all services", description = "Returns all services including inactive ones")
+    @Operation(summary = "Get all services", operationId = "getAllServices", description = "Returns all services including inactive ones")
     public ResponseEntity<ApiResponse<List<ServiceResponse>>> getAll() {
         return ResponseEntity.ok(ApiResponse.ok(salonServiceService.getAll()));
     }
 
     @GetMapping("/active")
-    @Operation(summary = "Get active services", description = "Returns only active services for sale entry")
+    @Operation(summary = "Get active services", operationId = "getActiveServices", description = "Returns only active services for sale entry")
     public ResponseEntity<ApiResponse<List<ServiceResponse>>> getActive() {
         return ResponseEntity.ok(ApiResponse.ok(salonServiceService.getActive()));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get service by ID")
+    @Operation(summary = "Get service by ID", operationId = "getServiceById")
     public ResponseEntity<ApiResponse<ServiceResponse>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(salonServiceService.getById(id)));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update service package")
+    @Operation(summary = "Update service package", operationId = "updateService")
     public ResponseEntity<ApiResponse<ServiceResponse>> update(@PathVariable Long id, @RequestBody UpdateServiceRequest request) {
         return ResponseEntity.ok(ApiResponse.ok("Service updated", salonServiceService.update(id, request)));
     }
 
     @PatchMapping("/{id}/status")
-    @Operation(summary = "Toggle service active/inactive")
+    @Operation(summary = "Toggle service active/inactive", operationId = "toggleServiceStatus")
     public ResponseEntity<ApiResponse<Void>> toggleStatus(@PathVariable Long id) {
         salonServiceService.toggleStatus(id);
         return ResponseEntity.ok(ApiResponse.ok("Status toggled", null));

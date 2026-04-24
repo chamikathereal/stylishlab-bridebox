@@ -7,12 +7,12 @@ import { ReceiptPDF } from "@/components/shared/ReceiptPDF";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { StatCard } from "@/components/shared/StatCard";
 import {
-  useGetByEmployee,
-  getGetByEmployeeQueryKey,
+  useGetSalesByEmployee,
+  getGetSalesByEmployeeQueryKey,
 } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
 import {
-  useRecordPayment,
-  getGetPendingQueryKey,
+  useRecordCreditPayment,
+  getGetPendingCreditsQueryKey,
 } from "@/api/generated/endpoints/credit-management/credit-management";
 import {
   DollarSign,
@@ -145,7 +145,7 @@ const STATUS_OPTIONS: readonly StatusOption[] = [
 export default function EarningsPage() {
   const { user } = useAuth();
   const employeeId = user?.employeeId;
-  const { data: res, isLoading } = useGetByEmployee(employeeId!, {
+  const { data: res, isLoading } = useGetSalesByEmployee(employeeId!, {
     query: { enabled: !!employeeId },
   });
 
@@ -168,7 +168,7 @@ export default function EarningsPage() {
     parseFloat(settleAmount) > (selectedSale?.dueAmount ?? 0);
 
   const queryClient = useQueryClient();
-  const payMutation = useRecordPayment();
+  const payMutation = useRecordCreditPayment();
 
   const handleSettle = () => {
     if (!selectedSale || !settleAmount) return;
@@ -190,10 +190,10 @@ export default function EarningsPage() {
 
           // Use specific query keys to ensure 100% accurate refresh
           queryClient.invalidateQueries({
-            queryKey: getGetByEmployeeQueryKey(employeeId!),
+            queryKey: getGetSalesByEmployeeQueryKey(employeeId!),
           });
           queryClient.invalidateQueries({
-            queryKey: getGetPendingQueryKey(),
+            queryKey: getGetPendingCreditsQueryKey(),
           });
           // Also invalidate reports just in case stats need updating
           queryClient.invalidateQueries({ queryKey: ["/api/reports"] });
