@@ -7,7 +7,7 @@ import {
   useGetPendingCredits,
   useRecordCreditPayment,
 } from "@/api/generated/endpoints/credit-management/credit-management";
-import { useGetAllSales } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
+import { useGetPendingSales } from "@/api/generated/endpoints/sales-transactions/sales-transactions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,14 +26,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
   CreditCard,
   DollarSign,
   Search,
-  User,
   Filter,
   ArrowRight,
+  ArrowUpDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -53,11 +60,13 @@ function formatCurrency(val?: number) {
 
 export default function CreditsPage() {
   const queryClient = useQueryClient();
-  const { data: pendingRes, isLoading: isPendingLoading } = useGetPendingCredits();
-  const { data: salesRes, isLoading: isSalesLoading } = useGetAllSales();
+  const { data: pendingRes, isLoading: isPendingLoading } =
+    useGetPendingCredits();
+  const { data: salesRes, isLoading: isSalesLoading } = useGetPendingSales();
   const payMutation = useRecordCreditPayment();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("date-desc");
   const [payDialog, setPayDialog] = useState<{
     saleId: number;
     customer: string;
@@ -68,22 +77,47 @@ export default function CreditsPage() {
   const [note, setNote] = useState("");
 
   const pending: CustomerCreditSummaryResponse[] = pendingRes?.data ?? [];
-  const allSales: SaleResponse[] = salesRes?.data?.content ?? [];
-  const creditSales = allSales.filter(
-    (s) =>
-      (s.paymentStatus === "CREDIT" || s.paymentStatus === "PARTIAL") &&
-      (s.dueAmount ?? 0) > 0,
-  );
+  const creditSales: SaleResponse[] = salesRes?.data ?? [];
 
-  const filteredSales = creditSales.filter(
-    (s) =>
-      s.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.invoiceNo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.serviceNameSnapshot?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredSales = creditSales
+    .filter(
+      (s) =>
+        s.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.invoiceNo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.serviceNameSnapshot?.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "due-desc":
+          return (b.dueAmount ?? 0) - (a.dueAmount ?? 0);
+        case "due-asc":
+          return (a.dueAmount ?? 0) - (b.dueAmount ?? 0);
+        case "date-desc":
+          return (
+            new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
+          );
+        case "date-asc":
+          return (
+            new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime()
+          );
+        case "name-asc":
+          return (a.customerName ?? "").localeCompare(b.customerName ?? "");
+        case "price-desc":
+          return (
+            (b.servicePriceSnapshot ?? 0) - (a.servicePriceSnapshot ?? 0)
+          );
+        default:
+          return 0;
+      }
+    });
 
   const totalOutstanding = pending.reduce(
     (sum, c) => sum + (c.totalDue ?? 0),
+    0,
+  );
+
+  const totalServiceValue = filteredSales.reduce(
+    (sum, s) => sum + (s.servicePriceSnapshot ?? 0),
     0,
   );
 
@@ -129,6 +163,24 @@ export default function CreditsPage() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="glass-card border-l-4 border-l-primary overflow-hidden relative">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
+                Total Sales Value
+              </p>
+              <p className="text-2xl font-bold">
+                {formatCurrency(totalServiceValue)}
+              </p>
+            </div>
+            <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12">
+              <DollarSign className="w-24 h-24 text-primary" />
+            </div>
+          </CardContent>
+        </Card>
         <Card className="glass-card border-l-4 border-l-amber-500 overflow-hidden relative">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
@@ -144,23 +196,6 @@ export default function CreditsPage() {
             </div>
             <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12">
               <CreditCard className="w-24 h-24 text-amber-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-l-4 border-l-primary overflow-hidden relative">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
-                Active Debtors
-              </p>
-              <p className="text-2xl font-bold">{pending.length}</p>
-            </div>
-            <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12">
-              <User className="w-24 h-24 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -186,14 +221,33 @@ export default function CreditsPage() {
       <Card className="glass-card overflow-hidden">
         <CardContent className="p-0">
           <div className="p-4 border-b border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between bg-white/2">
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by customer or invoice..."
-                className="pl-9 bg-background/40 border-white/10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+            <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+              <div className="relative w-full md:w-80">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by customer or invoice..."
+                  className="pl-9 bg-background/40 border-white/10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+                <Select value={sortBy} onValueChange={(v) => v && setSortBy(v)}>
+                  <SelectTrigger className="w-full md:w-48 bg-background/40 border-white/10">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-card border-white/10">
+                    <SelectItem value="date-desc">Newest First</SelectItem>
+                    <SelectItem value="date-asc">Oldest First</SelectItem>
+                    <SelectItem value="due-desc">Highest Due</SelectItem>
+                    <SelectItem value="due-asc">Lowest Due</SelectItem>
+                    <SelectItem value="price-desc">Highest Value</SelectItem>
+                    <SelectItem value="name-asc">Customer A-Z</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="text-sm text-muted-foreground">
               Showing{" "}

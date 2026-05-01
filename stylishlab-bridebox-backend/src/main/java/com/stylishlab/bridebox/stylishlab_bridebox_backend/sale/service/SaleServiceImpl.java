@@ -164,9 +164,12 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public Page<SaleResponse> getAll(String search, Pageable pageable) {
+    public Page<SaleResponse> getAll(String search, PaymentStatus status, Pageable pageable) {
         if (search != null && !search.trim().isEmpty()) {
-            return saleRepository.findAllWithSearch(search, pageable).map(this::toResponse);
+            return saleRepository.findAllWithSearch(search, status, pageable).map(this::toResponse);
+        }
+        if (status != null) {
+            return saleRepository.findAllByPaymentStatus(status, pageable).map(this::toResponse);
         }
         return saleRepository.findAll(pageable).map(this::toResponse);
     }
@@ -182,15 +185,24 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public Page<SaleResponse> getByDateRange(LocalDate from, LocalDate to, String search, Pageable pageable) {
+    public Page<SaleResponse> getByDateRange(LocalDate from, LocalDate to, String search, PaymentStatus status, Pageable pageable) {
         LocalDateTime fromDt = from.atStartOfDay();
         LocalDateTime toDt = to.atTime(LocalTime.MAX);
         if (search != null && !search.trim().isEmpty()) {
-            return saleRepository.findByCreatedAtBetweenWithSearch(search, fromDt, toDt, pageable)
+            return saleRepository.findByCreatedAtBetweenWithSearch(search, fromDt, toDt, status, pageable)
                     .map(this::toResponse);
         }
-        return saleRepository.findByCreatedAtBetween(fromDt, toDt, pageable)
+        return saleRepository.findByCreatedAtBetween(fromDt, toDt, status, pageable)
                 .map(this::toResponse);
+    }
+
+    @Override
+    public List<SaleResponse> getPendingSales() {
+        return saleRepository.findByPaymentStatusIn(List.of(PaymentStatus.CREDIT, PaymentStatus.PARTIAL))
+                .stream()
+                .filter(s -> s.getDueAmount().compareTo(BigDecimal.ZERO) > 0)
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     private String generateInvoiceNo() {

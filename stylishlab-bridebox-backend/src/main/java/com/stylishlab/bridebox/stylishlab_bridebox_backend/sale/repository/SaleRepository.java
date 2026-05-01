@@ -18,22 +18,25 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
 
     List<Sale> findByCustomerId(Long customerId);
 
-    @Query("SELECT s FROM Sale s WHERE " +
+    @Query("SELECT s FROM Sale s WHERE (:status IS NULL OR s.paymentStatus = :status) AND (" +
            "LOWER(s.invoiceNo) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(s.customer.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(s.employee.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(s.serviceNameSnapshot) LIKE LOWER(CONCAT('%', :search, '%'))")
-    Page<Sale> findAllWithSearch(@Param("search") String search, Pageable pageable);
+           "LOWER(s.serviceNameSnapshot) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Sale> findAllWithSearch(@Param("search") String search, @Param("status") PaymentStatus status, Pageable pageable);
 
-    @Query("SELECT s FROM Sale s WHERE " +
-           "(LOWER(s.invoiceNo) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+    @Query("SELECT s FROM Sale s WHERE (:status IS NULL OR s.paymentStatus = :status) AND (" +
+           "LOWER(s.invoiceNo) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(s.customer.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(s.employee.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(s.serviceNameSnapshot) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
            "s.createdAt BETWEEN :from AND :to")
-    Page<Sale> findByCreatedAtBetweenWithSearch(@Param("search") String search, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to, Pageable pageable);
+    Page<Sale> findByCreatedAtBetweenWithSearch(@Param("search") String search, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to, @Param("status") PaymentStatus status, Pageable pageable);
 
-    Page<Sale> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
+    @Query("SELECT s FROM Sale s WHERE (:status IS NULL OR s.paymentStatus = :status) AND s.createdAt BETWEEN :from AND :to")
+    Page<Sale> findByCreatedAtBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to, @Param("status") PaymentStatus status, Pageable pageable);
+
+    Page<Sale> findAllByPaymentStatus(PaymentStatus status, Pageable pageable);
 
     List<Sale> findByPaymentStatusIn(List<PaymentStatus> statuses);
 

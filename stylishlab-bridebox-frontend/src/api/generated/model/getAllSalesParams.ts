@@ -5,9 +5,11 @@
  * API for managing salon services, employees, customers, sales, expenses, and reports
  * OpenAPI spec version: 1.0.0
  */
+import type { GetAllSalesStatus } from './getAllSalesStatus';
 
 export type GetAllSalesParams = {
 search?: string;
+status?: GetAllSalesStatus;
 page?: number;
 size?: number;
 sort?: string;

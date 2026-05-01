@@ -1,6 +1,7 @@
 package com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.controller;
 
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.dto.ApiResponse;
+import com.stylishlab.bridebox.stylishlab_bridebox_backend.common.enums.PaymentStatus;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.dto.*;
 import com.stylishlab.bridebox.stylishlab_bridebox_backend.sale.service.SaleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,11 +40,12 @@ public class SaleController {
     @Operation(summary = "Get all sales", operationId = "getAllSales")
     public ResponseEntity<ApiResponse<Page<SaleResponse>>> getAll(
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) PaymentStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
         Pageable pageable = createPageable(page, size, sort);
-        return ResponseEntity.ok(ApiResponse.ok(saleService.getAll(search, pageable)));
+        return ResponseEntity.ok(ApiResponse.ok(saleService.getAll(search, status, pageable)));
     }
 
     @GetMapping("/{id}")
@@ -70,11 +72,18 @@ public class SaleController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) PaymentStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
         Pageable pageable = createPageable(page, size, sort);
-        return ResponseEntity.ok(ApiResponse.ok(saleService.getByDateRange(from, to, search, pageable)));
+        return ResponseEntity.ok(ApiResponse.ok(saleService.getByDateRange(from, to, search, status, pageable)));
+    }
+
+    @GetMapping("/pending")
+    @Operation(summary = "Get all sales with pending credit/partial payments", operationId = "getPendingSales")
+    public ResponseEntity<ApiResponse<List<SaleResponse>>> getPending() {
+        return ResponseEntity.ok(ApiResponse.ok(saleService.getPendingSales()));
     }
 
     private Pageable createPageable(int page, int size, String sort) {

@@ -5,11 +5,13 @@
  * API for managing salon services, employees, customers, sales, expenses, and reports
  * OpenAPI spec version: 1.0.0
  */
+import type { GetSalesByDateRangeStatus } from './getSalesByDateRangeStatus';
 
 export type GetSalesByDateRangeParams = {
 from: string;
 to: string;
 search?: string;
+status?: GetSalesByDateRangeStatus;
 page?: number;
 size?: number;
 sort?: string;

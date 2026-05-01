@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { type PeriodType } from "@/hooks/usePeriodFilter";
+import { GetAllSalesStatus } from "@/api/generated/model";
 
 interface SalesToolbarProps {
   filter: string;
@@ -19,6 +20,8 @@ interface SalesToolbarProps {
   setKpiPeriod: (val: PeriodType) => void;
   selectedDate: string;
   setSelectedDate: (val: string) => void;
+  statusFilter: GetAllSalesStatus | "ALL";
+  setStatusFilter: (val: GetAllSalesStatus | "ALL") => void;
   reset: () => void;
   totalElements: number;
   isFetching: boolean;
@@ -32,6 +35,8 @@ export function SalesToolbar({
   setKpiPeriod,
   selectedDate,
   setSelectedDate,
+  statusFilter,
+  setStatusFilter,
   reset,
   totalElements,
   isFetching,
@@ -72,6 +77,26 @@ export function SalesToolbar({
             onChange={(e) => setSelectedDate(e.target.value)}
             className="h-9 w-full text-xs bg-background/50 border-border/50 rounded-lg font-medium"
           />
+        </div>
+        
+        <div className="flex-1 min-w-[140px]">
+          <Label className="text-[10px] uppercase text-muted-foreground font-bold mb-1.5 flex items-center gap-1 ml-1">
+            <Filter className="w-2.5 h-2.5" /> Payment Status
+          </Label>
+          <Select
+            value={statusFilter}
+            onValueChange={(v: string | null) => v && setStatusFilter(v as GetAllSalesStatus | "ALL")}
+          >
+            <SelectTrigger className="h-9 w-full text-xs bg-background/50 border-border/50 rounded-lg">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Status</SelectItem>
+              <SelectItem value="FULLY_PAID">Fully Paid</SelectItem>
+              <SelectItem value="CREDIT">Credit</SelectItem>
+              <SelectItem value="PARTIAL">Partial</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="flex items-end self-end mb-px">

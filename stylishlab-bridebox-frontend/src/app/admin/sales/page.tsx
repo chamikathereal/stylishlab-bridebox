@@ -31,6 +31,7 @@ import {
   ServiceResponse,
   EmployeeResponse,
   PeriodReportResponse,
+  GetAllSalesStatus,
 } from "@/api/generated/model";
 
 // Sub-components
@@ -54,6 +55,7 @@ export default function SalesPage() {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const [debouncedFilter, setDebouncedFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<GetAllSalesStatus | "ALL">("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -127,6 +129,7 @@ export default function SalesPage() {
       page: currentPage - 1,
       size: itemsPerPage,
       search: debouncedFilter,
+      status: statusFilter === "ALL" ? undefined : statusFilter,
       sort: "createdAt,desc",
     },
     {
@@ -144,6 +147,7 @@ export default function SalesPage() {
       page: currentPage - 1,
       size: itemsPerPage,
       search: debouncedFilter,
+      status: statusFilter === "ALL" ? undefined : statusFilter,
       sort: "createdAt,desc",
     },
     {
@@ -213,11 +217,16 @@ export default function SalesPage() {
       <SalesToolbar
         filter={filter}
         setFilter={setFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
         kpiPeriod={kpiPeriod}
         setKpiPeriod={setKpiPeriod}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        reset={reset}
+        reset={() => {
+          reset();
+          setStatusFilter("ALL");
+        }}
         totalElements={totalElements}
         isFetching={res.isFetching}
         setCurrentPage={setCurrentPage}
