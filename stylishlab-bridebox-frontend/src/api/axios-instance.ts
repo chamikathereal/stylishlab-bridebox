@@ -1,12 +1,13 @@
-import Axios, { AxiosRequestConfig, AxiosError } from 'axios';
+import Axios, { AxiosRequestConfig, AxiosError } from "axios";
 
 export const AXIOS_INSTANCE = Axios.create({
-  baseURL: 'http://localhost:8080',
+  // baseURL: 'http://localhost:8080',
+  baseURL: "https://stylishlab-bridebox.duckdns.org/api",
 });
 
 AXIOS_INSTANCE.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('bridebox_token');
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("bridebox_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -18,17 +19,20 @@ AXIOS_INSTANCE.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('bridebox_token');
-        localStorage.removeItem('bridebox_user');
-        window.location.href = '/login';
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("bridebox_token");
+        localStorage.removeItem("bridebox_user");
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
-export const customInstance = <T>(config: AxiosRequestConfig, options?: AxiosRequestConfig): Promise<T> => {
+export const customInstance = <T>(
+  config: AxiosRequestConfig,
+  options?: AxiosRequestConfig,
+): Promise<T> => {
   const source = Axios.CancelToken.source();
   const promise = AXIOS_INSTANCE({
     ...config,
@@ -38,7 +42,7 @@ export const customInstance = <T>(config: AxiosRequestConfig, options?: AxiosReq
 
   // @ts-expect-error - adding cancel method to promise
   promise.cancel = () => {
-    source.cancel('Query was cancelled');
+    source.cancel("Query was cancelled");
   };
 
   return promise;
