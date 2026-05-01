@@ -2,7 +2,7 @@ import Axios, { AxiosRequestConfig, AxiosError } from "axios";
 
 export const AXIOS_INSTANCE = Axios.create({
   // baseURL: 'http://localhost:8080',
-  baseURL: "https://stylishlab-bridebox.duckdns.org/api",
+  baseURL: "https://stylishlab-bridebox.duckdns.org",
 });
 
 AXIOS_INSTANCE.interceptors.request.use((config) => {
